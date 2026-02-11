@@ -1,0 +1,27 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<h2 class="text-4xl font-semibold mb-10">
+  Welcome back, {{ request.user.username }} 👋
+</h2>
+
+<div class="grid md:grid-cols-3 gap-8">
+
+  <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+    <h3 class="font-semibold mb-3 text-slate-700">Income Range</h3>
+    <p>{{ request.user.income_range|default:"Not set" }}</p>
+  </div>
+
+  <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+    <h3 class="font-semibold mb-3 text-slate-700">Phone</h3>
+    <p>{{ request.user.phone|default:"Not set" }}</p>
+  </div>
+
+  <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+    <h3 class="font-semibold mb-3 text-slate-700">Email</h3>
+    <p>{{ request.user.email }}</p>
+  </div>
+
+</div>
+
+{% endblock %}

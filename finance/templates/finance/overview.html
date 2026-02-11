@@ -1,0 +1,251 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+.glow-bg {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #22d3ee, transparent 60%);
+  filter: blur(140px);
+  opacity: 0.15;
+  animation: float 10s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.card {
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(20px);
+  border-radius: 28px;
+  padding: 36px;
+  transition: all 0.4s ease;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.08);
+}
+</style>
+
+<div class="relative">
+
+<div class="glow-bg -top-32 -left-32"></div>
+
+<h2 class="text-4xl font-semibold mb-16">
+  Financial Intelligence Center 🧠
+</h2>
+
+<!-- SUMMARY CARDS -->
+<div class="grid md:grid-cols-4 gap-8 mb-16">
+
+  <div class="card">
+    <p class="text-slate-500 text-sm">Monthly Income</p>
+    <p class="text-3xl font-semibold mt-2">
+      ₹ {{ summary.monthly_income }}
+    </p>
+  </div>
+
+  <div class="card">
+    <p class="text-slate-500 text-sm">Total EMI</p>
+    <p class="text-3xl font-semibold mt-2">
+      ₹ {{ summary.total_emi }}
+    </p>
+  </div>
+
+  <div class="card">
+    <p class="text-slate-500 text-sm">Surplus</p>
+    <p class="text-3xl font-semibold mt-2">
+      ₹ {{ summary.surplus }}
+    </p>
+  </div>
+
+  <div class="card">
+    <p class="text-slate-500 text-sm">Risk Level</p>
+    <p class="text-3xl font-semibold mt-2">
+      {{ summary.risk_level }}
+    </p>
+    <p class="text-sm text-slate-400 mt-2">
+      Liquidity Risk: {{ summary.liquidity_probability }}%
+    </p>
+  </div>
+
+</div>
+
+<!-- GRAPHS -->
+<div class="grid md:grid-cols-2 gap-12 mb-16">
+
+  <div class="card">
+    <h3 class="text-xl font-semibold mb-6">
+      Cashflow Breakdown
+    </h3>
+    <canvas id="cashflowChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3 class="text-xl font-semibold mb-6">
+      Estimated CIBIL Score
+    </h3>
+    <canvas id="cibilChart"></canvas>
+  </div>
+
+</div>
+
+<!-- EMI OPTIMIZER -->
+{% if summary.emi_optimizer %}
+<div class="card mb-16">
+  <h3 class="text-xl font-semibold mb-6">
+    EMI Prepayment Strategy
+  </h3>
+
+  <p>Close first:
+    <strong>{{ summary.emi_optimizer.close_first }}</strong>
+  </p>
+
+  <p class="mt-2">
+    Months Saved: {{ summary.emi_optimizer.months_saved }}
+  </p>
+
+  <p class="mt-2">
+    Interest Saved: ₹ {{ summary.emi_optimizer.interest_saved }}
+  </p>
+</div>
+{% endif %}
+
+<!-- EMI SIMULATION SLIDER -->
+<div class="card mb-16">
+  <h3 class="text-xl font-semibold mb-6">
+    EMI Prepayment Simulator
+  </h3>
+
+  <input type="range"
+         min="0"
+         max="20000"
+         step="1000"
+         id="extraPayment"
+         class="w-full accent-cyan-500">
+
+  <p class="mt-6 text-lg">
+    Extra Monthly Payment: ₹
+    <span id="extraValue">0</span>
+  </p>
+
+  <p class="text-slate-500 text-sm mt-2">
+    Use this to simulate faster debt closure.
+  </p>
+</div>
+
+<!-- DEBT FREE PROJECTION -->
+<div class="card mb-16">
+  <h3 class="text-xl font-semibold mb-6">
+    Debt-Free Projection
+  </h3>
+
+  <p class="text-lg">
+    You will be debt-free in
+    <strong>{{ debt_free_months }}</strong> months.
+  </p>
+</div>
+
+<!-- CREDIT SIMULATOR DETAILS -->
+<div class="card mb-16">
+  <h3 class="text-xl font-semibold mb-6">
+    Credit Utilisation Simulator
+  </h3>
+
+  {% for card in summary.credit_simulation %}
+  <div class="mb-8 border-b pb-6 last:border-none">
+    <p class="font-semibold">{{ card.card }}</p>
+    <p class="text-slate-600">
+      Utilisation: {{ card.utilization }}%
+    </p>
+    <p class="text-slate-600">
+      Estimated CIBIL Impact: {{ card.cibil_impact }}
+    </p>
+    <p class="text-slate-600">
+      Optimal Payment: ₹ {{ card.optimal_payment }}
+    </p>
+  </div>
+  {% empty %}
+  <p class="text-slate-500">No credit cards added.</p>
+  {% endfor %}
+</div>
+
+<!-- SMART ALERTS -->
+<div class="card">
+  <h3 class="text-xl font-semibold mb-6">
+    Smart Alerts
+  </h3>
+
+  <ul class="space-y-3">
+    {% for alert in summary.alerts %}
+      <li class="text-red-500">• {{ alert }}</li>
+    {% empty %}
+      <li class="text-green-600">
+        All financial metrics stable.
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
+</div>
+
+
+<!-- CHART SCRIPTS -->
+<script>
+/* CASHFLOW DOUGHNUT */
+new Chart(document.getElementById('cashflowChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['EMI', 'Spending', 'Subscriptions', 'Surplus'],
+    datasets: [{
+      data: [
+        {{ summary.total_emi|default:0 }},
+        {{ summary.spending|default:0 }},
+        {{ summary.subscriptions|default:0 }},
+        {{ summary.surplus|default:0 }}
+      ]
+    }]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom' } },
+    animation: { duration: 1200 }
+  }
+});
+
+/* CIBIL CURVE */
+new Chart(document.getElementById('cibilChart'), {
+  type: 'line',
+  data: {
+    labels: ['Current'],
+    datasets: [{
+      label: 'Estimated CIBIL',
+      data: [{{ cibil_score|default:750 }}],
+      tension: 0.4
+    }]
+  },
+  options: {
+    scales: {
+      y: { min: 300, max: 900 }
+    },
+    animation: { duration: 1200 }
+  }
+});
+
+/* SLIDER */
+const slider = document.getElementById('extraPayment');
+const output = document.getElementById('extraValue');
+
+slider.oninput = function() {
+  output.innerHTML = this.value;
+};
+</script>
+
+{% endblock %}

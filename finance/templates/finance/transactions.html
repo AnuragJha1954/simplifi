@@ -1,0 +1,335 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<style>
+
+.section-header {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 40px;
+}
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+}
+
+.summary-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 60px;
+}
+
+.summary-item {
+  background: linear-gradient(to right, #f8fafc, #ffffff);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+}
+
+.summary-value {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.table-wrapper {
+  margin-top: 60px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+th, td {
+  padding: 16px;
+}
+
+tbody tr {
+  border-top: 1px solid #f1f5f9;
+  transition: background 0.2s ease;
+}
+
+tbody tr:hover {
+  background: #f8fafc;
+}
+
+.action-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+tr:hover .action-btn {
+  opacity: 1;
+}
+
+.primary-btn {
+  background: #0ea5e9;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.primary-btn:hover {
+  background: #0284c7;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: .3s;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: .3s;
+}
+
+input:checked + .slider {
+  background: #06b6d4;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+</style>
+
+<h2 class="section-header">
+  Financial Transactions
+</h2>
+
+<!-- SUMMARY STRIP -->
+<div class="summary-bar">
+
+  <div class="summary-item">
+    <p>Total Credit Limit</p>
+    <p class="summary-value">₹ {{ total_credit_limit }}</p>
+  </div>
+
+  <div class="summary-item">
+    <p>Total EMI</p>
+    <p class="summary-value">₹ {{ total_emi }}</p>
+  </div>
+
+  <div class="summary-item">
+    <p>Subscriptions</p>
+    <p class="summary-value">₹ {{ total_subscription }}</p>
+  </div>
+
+  <div class="summary-item">
+    <p>Active Cards</p>
+    <p class="summary-value">{{ page_obj.paginator.count }}</p>
+  </div>
+
+</div>
+
+<!-- FORMS -->
+<div class="grid md:grid-cols-2 gap-10">
+
+  <!-- CREDIT CARD -->
+  <div class="card">
+    <h3 class="mb-6 font-semibold text-lg">Add Credit Card</h3>
+    <form method="POST" class="space-y-5 ajax-form">
+      {% csrf_token %}
+      {{ card_form.bank_name }}
+      {{ card_form.total_limit }}
+      {{ card_form.available_limit }}
+      {{ card_form.interest_rate }}
+      <input type="hidden" name="form_type" value="card">
+      <button class="primary-btn">Add Card</button>
+    </form>
+  </div>
+
+  <!-- EMI -->
+  <div class="card">
+    <h3 class="mb-6 font-semibold text-lg">Add EMI</h3>
+    <form method="POST" class="space-y-5 ajax-form">
+      {% csrf_token %}
+      {{ emi_form }}
+      <input type="hidden" name="form_type" value="emi">
+      <button class="primary-btn">Add EMI</button>
+    </form>
+  </div>
+
+  <!-- SUBSCRIPTION -->
+  <div class="card">
+    <h3 class="mb-6 font-semibold text-lg">Add Subscription</h3>
+    <form method="POST" class="space-y-5 ajax-form">
+      {% csrf_token %}
+      {{ sub_form.name }}
+      {{ sub_form.monthly_cost }}
+
+      <div class="flex items-center gap-4 mt-4">
+        <label class="toggle-switch">
+          {{ sub_form.is_essential }}
+          <span class="slider"></span>
+        </label>
+        <span class="text-sm text-slate-600">
+          Mark as Essential (cannot be reduced)
+        </span>
+      </div>
+
+      <input type="hidden" name="form_type" value="sub">
+      <button class="primary-btn mt-6">Add Subscription</button>
+    </form>
+  </div>
+
+  <!-- SPENDING -->
+  <div class="card">
+    <h3 class="mb-6 font-semibold text-lg">Add Monthly Spending</h3>
+    <form method="POST" class="space-y-5 ajax-form">
+      {% csrf_token %}
+      {{ spend_form }}
+      <input type="hidden" name="form_type" value="spend">
+      <button class="primary-btn">Add Spending</button>
+    </form>
+  </div>
+
+</div>
+
+<!-- CREDIT CARD TABLE -->
+<div class="table-section">
+  <h3 class="text-xl font-semibold mb-6">Credit Cards</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Bank</th>
+        <th>Total Limit</th>
+        <th>Available</th>
+        <th>APR</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for card in page_obj %}
+      <tr>
+        <td>{{ card.bank_name }}</td>
+        <td>₹ {{ card.total_limit }}</td>
+        <td>₹ {{ card.available_limit }}</td>
+        <td>{{ card.interest_rate }}%</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center py-6">No cards added</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- EMI TABLE -->
+<div class="table-section">
+  <h3 class="text-xl font-semibold mb-6">EMIs</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Principal</th>
+        <th>Monthly Payment</th>
+        <th>Remaining Months</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for emi in emis %}
+      <tr>
+        <td>{{ emi.name }}</td>
+        <td>₹ {{ emi.principal_amount }}</td>
+        <td>₹ {{ emi.monthly_payment }}</td>
+        <td>{{ emi.remaining_months }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center py-6">No EMIs added</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- SUBSCRIPTIONS TABLE -->
+<div class="table-section">
+  <h3 class="text-xl font-semibold mb-6">Subscriptions</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Monthly Cost</th>
+        <th>Essential</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sub in subs %}
+      <tr>
+        <td>{{ sub.name }}</td>
+        <td>₹ {{ sub.monthly_cost }}</td>
+        <td>
+          {% if sub.is_essential %}
+            <span class="text-green-600 font-medium">Yes</span>
+          {% else %}
+            <span class="text-slate-500">No</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="text-center py-6">No subscriptions added</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- SPENDING TABLE -->
+<div class="table-section">
+  <h3 class="text-xl font-semibold mb-6">Monthly Spending</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Average Monthly Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for spend in spendings %}
+      <tr>
+        <td>{{ spend.category }}</td>
+        <td>₹ {{ spend.average_monthly_amount }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="text-center py-6">No spending data added</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

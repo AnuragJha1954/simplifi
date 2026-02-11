@@ -1,0 +1,574 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simplifi — Your Personal CFO</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at 15% 10%, #e6fffa, transparent 40%),
+        radial-gradient(circle at 85% 20%, #ecfeff, transparent 35%),
+        #f8fafc;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1 {
+      font-size: 3.25rem;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    /* subtle float */
+    .float {
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    /* ===== GLOBAL BLUE GLOW SYSTEM ===== */
+
+#ambient-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.2s linear;
+}
+
+/* Individual glow colors & positions */
+.glow-1 {
+  background: radial-gradient(circle, #22d3ee, transparent 60%);
+  top: -10%;
+  left: -15%;
+}
+
+.glow-2 {
+  background: radial-gradient(circle, #38bdf8, transparent 60%);
+  top: 30%;
+  right: -20%;
+}
+
+.glow-3 {
+  background: radial-gradient(circle, #0ea5e9, transparent 60%);
+  bottom: -20%;
+  left: 25%;
+}
+
+/* Make sure content stays above glow */
+body > *:not(#ambient-glow) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== REVIEW MICRO-ANIMATIONS ===== */
+
+.review-card {
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease,
+    box-shadow 0.3s ease;
+}
+
+.review-card.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.review-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* subtle quote emphasis */
+.review-quote {
+  transition: color 0.3s ease;
+}
+
+.review-card:hover .review-quote {
+  color: #0f172a;
+}
+
+/* author fade-in */
+.review-author {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.review-card:hover .review-author {
+  opacity: 1;
+}
+
+/* Reviews section ambient glow */
+.reviews-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.reviews-glow::before,
+.reviews-glow::after {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.25;
+}
+
+.reviews-glow::before {
+  background: radial-gradient(circle, #38bdf8, transparent 60%);
+  top: -20%;
+  left: -15%;
+}
+
+.reviews-glow::after {
+  background: radial-gradient(circle, #0ea5e9, transparent 60%);
+  bottom: -25%;
+  right: -20%;
+}
+
+
+
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+{% if messages %}
+  <div class="fixed top-5 right-5 z-50">
+    {% for message in messages %}
+      <div class="bg-red-500 text-white px-4 py-2 rounded mb-2 shadow">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+<!-- GLOBAL AMBIENT GLOW -->
+<div id="ambient-glow" aria-hidden="true">
+  <span class="glow glow-1"></span>
+  <span class="glow glow-2"></span>
+  <span class="glow glow-3"></span>
+</div>
+
+<!-- NAVBAR -->
+<nav class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+  <div class="flex items-center gap-3">
+    <img src="{% static 'images/logo.png' %}" class="h-10 w-30" alt="Simplifi Logo">
+  </div>
+
+  <div class="hidden md:flex gap-8 text-sm text-slate-600">
+    <a href="#" class="hover:text-black">Product</a>
+    <a href="#" class="hover:text-black">How it works</a>
+    <a href="/pricing/" class="hover:text-black">Pricing</a>
+
+  </div>
+
+{% if request.user.is_authenticated %}
+  <a href="{% url 'dashboard' %}"
+     class="bg-slate-900 text-white px-5 py-2 rounded-lg font-medium hover:bg-slate-800 transition">
+     Dashboard
+  </a>
+{% else %}
+  <a href="{% url 'login' %}"
+     class="bg-slate-900 text-white px-5 py-2 rounded-lg font-medium hover:bg-slate-800 transition">
+     Login
+  </a>
+{% endif %}
+
+</nav>
+
+<!-- HERO -->
+<!-- HERO -->
+<section class="max-w-7xl mx-auto px-6 pt-24 pb-32 grid md:grid-cols-2 gap-16 items-center">
+
+  <!-- LEFT TEXT -->
+  <div
+    x-data
+    x-init="$el.classList.add('opacity-100','translate-y-0')"
+    class="opacity-0 translate-y-6 transition-all duration-700"
+  >
+    <!-- Small eyebrow -->
+    <p class="text-sm text-teal-600 font-medium mb-3">
+      Your Personal CFO
+    </p>
+
+    <!-- MAIN HEADLINE -->
+    <h1 class="font-semibold leading-tight tracking-tight mb-6">
+      <span class="block text-6xl md:text-7xl">
+        Personal CFO
+      </span>
+      <span class="block text-3xl md:text-4xl text-slate-700 mt-2">
+        for Everyday Life
+      </span>
+    </h1>
+
+    <!-- SUBTEXT -->
+    <p class="text-lg text-slate-600 max-w-xl mb-10">
+      Simplifi helps you track bills, manage budgets,
+      and make confident money decisions —
+      without stress or spreadsheets.
+    </p>
+
+    <!-- SINGLE CTA -->
+    <a href="#"
+       class="inline-block bg-gradient-to-r from-teal-600 to-cyan-500
+              text-white px-10 py-4 rounded-xl text-lg font-semibold
+              hover:opacity-90 transition">
+      Get Started Free
+    </a>
+  </div>
+
+  <!-- RIGHT IMAGE (UNCHANGED) -->
+  <div class="relative flex justify-center items-center">
+
+    <!-- background glow -->
+    <div class="absolute w-[420px] h-[420px]
+                bg-gradient-to-br from-teal-400 to-cyan-300
+                blur-3xl opacity-30"></div>
+
+    <!-- image -->
+    <img
+      src="{% static 'images/coverimage.png' %}"
+      alt="Simplifi app"
+      class="relative max-h-[560px]
+             drop-shadow-[0_30px_40px_rgba(0,0,0,0.15)]"
+    >
+
+  </div>
+
+</section>
+
+
+<!-- FEATURES / VALUE SECTION -->
+<section class="max-w-7xl mx-auto px-6 pb-32 relative">
+
+  <!-- subtle section glow -->
+  <div class="absolute inset-x-0 -top-20 h-64
+              bg-gradient-to-r from-transparent via-cyan-200/40 to-transparent
+              blur-3xl pointer-events-none"></div>
+
+  <div class="grid md:grid-cols-3 gap-10 relative">
+
+    <!-- Feature 1 -->
+    <div
+      class="group bg-white/70 backdrop-blur
+             rounded-3xl p-8 border border-slate-200
+             transition-all duration-500
+             hover:shadow-2xl hover:-translate-y-2">
+
+      <div class="relative mb-6 w-14 h-14">
+        <div class="absolute inset-0 rounded-2xl
+                    bg-gradient-to-br from-teal-400 to-cyan-400
+                    blur-xl opacity-40 group-hover:opacity-70 transition"></div>
+        <div class="relative w-full h-full rounded-2xl
+            bg-gradient-to-br from-teal-500 to-cyan-500
+            flex items-center justify-center">
+  <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+    <path d="M2 10h20"></path>
+  </svg>
+</div>
+
+      </div>
+
+      <h3 class="text-xl font-semibold mb-3">
+        Bill & Budget Control
+      </h3>
+
+      <p class="text-slate-600 leading-relaxed">
+        Track credit cards, EMIs, and spending limits —
+        all in one intelligent, always-updated view.
+      </p>
+
+      <div class="mt-6 h-1 w-12 rounded-full
+                  bg-gradient-to-r from-teal-500 to-cyan-500"></div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div
+      class="group bg-white/70 backdrop-blur
+             rounded-3xl p-8 border border-slate-200
+             transition-all duration-500
+             hover:shadow-2xl hover:-translate-y-2">
+
+      <div class="relative mb-6 w-14 h-14">
+        <div class="absolute inset-0 rounded-2xl
+                    bg-gradient-to-br from-sky-400 to-indigo-400
+                    blur-xl opacity-40 group-hover:opacity-70 transition"></div>
+<div class="relative w-full h-full rounded-2xl
+            bg-gradient-to-br from-sky-500 to-indigo-500
+            flex items-center justify-center">
+  <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path d="M3 3v18h18"></path>
+    <path d="M7 14v4"></path>
+    <path d="M12 10v8"></path>
+    <path d="M17 6v12"></path>
+  </svg>
+</div>
+
+      </div>
+
+      <h3 class="text-xl font-semibold mb-3">
+        Real Cashflow
+      </h3>
+
+      <p class="text-slate-600 leading-relaxed">
+        See what you earn, what you spend,
+        and what you can safely use — in real time.
+      </p>
+
+      <div class="mt-6 h-1 w-12 rounded-full
+                  bg-gradient-to-r from-sky-500 to-indigo-500"></div>
+    </div>
+
+    <!-- Feature 3 -->
+    <div
+      class="group bg-white/70 backdrop-blur
+             rounded-3xl p-8 border border-slate-200
+             transition-all duration-500
+             hover:shadow-2xl hover:-translate-y-2">
+
+      <div class="relative mb-6 w-14 h-14">
+        <div class="absolute inset-0 rounded-2xl
+                    bg-gradient-to-br from-pink-400 to-fuchsia-400
+                    blur-xl opacity-40 group-hover:opacity-70 transition"></div>
+        <div class="relative w-full h-full rounded-2xl
+            bg-gradient-to-br from-pink-500 to-fuchsia-500
+            flex items-center justify-center">
+  <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path d="M9 3a3 3 0 0 0-3 3v1a3 3 0 0 1-2 2.83V12a3 3 0 0 0 2 2.83V18a3 3 0 0 0 3 3"></path>
+    <path d="M15 3a3 3 0 0 1 3 3v1a3 3 0 0 0 2 2.83V12a3 3 0 0 1-2 2.83V18a3 3 0 0 1-3 3"></path>
+  </svg>
+</div>
+
+      </div>
+
+      <h3 class="text-xl font-semibold mb-3">
+        CFO Insights
+      </h3>
+
+      <p class="text-slate-600 leading-relaxed">
+        No noise. No panic.
+        Just clear, structured money decisions —
+        like a real CFO would make.
+      </p>
+
+      <div class="mt-6 h-1 w-12 rounded-full
+                  bg-gradient-to-r from-pink-500 to-fuchsia-500"></div>
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- TRUST & PRIVACY -->
+<section class="max-w-6xl mx-auto px-6 py-32 text-center">
+
+  <h2 class="text-4xl font-semibold mb-6">
+    Privacy-first by design
+  </h2>
+
+  <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-20">
+    Simplifi is built with a CFO mindset —
+    minimal data access, zero selling, full user control.
+  </p>
+
+  <div class="grid md:grid-cols-3 gap-10 text-left">
+
+    <div class="bg-white/80 border border-slate-200 rounded-2xl p-6">
+      <h4 class="font-semibold mb-2">No bank logins</h4>
+      <p class="text-slate-600 text-sm">
+        We never ask for your banking credentials.
+      </p>
+    </div>
+
+    <div class="bg-white/80 border border-slate-200 rounded-2xl p-6">
+      <h4 class="font-semibold mb-2">India-first compliance</h4>
+      <p class="text-slate-600 text-sm">
+        Designed for Indian users and data practices.
+      </p>
+    </div>
+
+    <div class="bg-white/80 border border-slate-200 rounded-2xl p-6">
+      <h4 class="font-semibold mb-2">Delete anytime</h4>
+      <p class="text-slate-600 text-sm">
+        Export or delete your data instantly.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- CUSTOMER REVIEWS -->
+<section class="relative py-32 bg-slate-50">
+
+  <!-- ambient blue glow -->
+  <div class="reviews-glow" aria-hidden="true"></div>
+
+  <div class="max-w-6xl mx-auto px-6 text-center relative z-10">
+
+    <h2 class="text-4xl font-semibold mb-20">
+      People trust Simplifi with their money
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-10 text-left">
+
+      <div class="review-card bg-white/90 border border-slate-200 rounded-2xl p-8">
+        <p class="review-quote text-slate-700 mb-6">
+          “I finally know what I can safely spend every month.
+          That peace alone is worth it.”
+        </p>
+        <p class="review-author font-semibold">
+          Rohan, Bengaluru
+        </p>
+      </div>
+
+      <div class="review-card bg-white/90 border border-slate-200 rounded-2xl p-8">
+        <p class="review-quote text-slate-700 mb-6">
+          “Feels like a calm CFO instead of another noisy app.”
+        </p>
+        <p class="review-author font-semibold">
+          Neha, Mumbai
+        </p>
+      </div>
+
+      <div class="review-card bg-white/90 border border-slate-200 rounded-2xl p-8">
+        <p class="review-quote text-slate-700 mb-6">
+          “₹199 a year for clarity is honestly a steal.”
+        </p>
+        <p class="review-author font-semibold">
+          Arjun, Pune
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+
+
+<!-- FAQ -->
+<section class="max-w-6xl mx-auto px-6 py-32">
+
+  <h2 class="text-4xl font-semibold text-center mb-20">
+    Common questions
+  </h2>
+
+  <div class="max-w-3xl mx-auto space-y-6">
+
+    <details class="group bg-white border border-slate-200 rounded-xl p-6">
+      <summary class="font-semibold cursor-pointer flex justify-between items-center">
+        Do I need to link my bank account?
+        <span class="text-slate-400 group-open:rotate-180 transition">⌄</span>
+      </summary>
+      <p class="text-slate-600 mt-4">
+        No. Simplifi works without bank logins.
+      </p>
+    </details>
+
+    <details class="group bg-white border border-slate-200 rounded-xl p-6">
+      <summary class="font-semibold cursor-pointer flex justify-between items-center">
+        Is Simplifi free?
+        <span class="text-slate-400 group-open:rotate-180 transition">⌄</span>
+      </summary>
+      <p class="text-slate-600 mt-4">
+        Yes. Paid plans unlock deeper automation and insights.
+      </p>
+    </details>
+
+    <details class="group bg-white border border-slate-200 rounded-xl p-6">
+      <summary class="font-semibold cursor-pointer flex justify-between items-center">
+        Is this built for Indian users?
+        <span class="text-slate-400 group-open:rotate-180 transition">⌄</span>
+      </summary>
+      <p class="text-slate-600 mt-4">
+        Yes. EMIs, reminders, and cashflow are India-first.
+      </p>
+    </details>
+
+  </div>
+</section>
+
+
+
+
+<!-- FOOTER -->
+<footer class="border-t border-slate-200 py-10 text-center text-slate-500 text-sm bg-white">
+  © {{ now|date:"Y" }} Simplifi. Your Personal CFO.
+</footer>
+
+
+
+
+<script>
+  const glows = {
+    g1: document.querySelector('.glow-1'),
+    g2: document.querySelector('.glow-2'),
+    g3: document.querySelector('.glow-3'),
+  };
+
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    const vh = window.innerHeight;
+
+    // Subtle parallax movement
+    glows.g1.style.transform =
+      `translate(${scrollY * 0.05}px, ${scrollY * 0.08}px)`;
+
+    glows.g2.style.transform =
+      `translate(${-scrollY * 0.04}px, ${scrollY * 0.06}px)`;
+
+    glows.g3.style.transform =
+      `translate(${scrollY * 0.03}px, ${-scrollY * 0.05}px)`;
+  });
+
+  const reviewCards = document.querySelectorAll('.review-card');
+
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    },
+    { threshold: 0.2 }
+  );
+
+  reviewCards.forEach(card => observer.observe(card));
+
+
+</script>
+
+</body>
+</html>

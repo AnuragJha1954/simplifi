@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pricing — Simplifi</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at 20% 10%, #e6fffa, transparent 40%),
+        radial-gradient(circle at 80% 20%, #ecfeff, transparent 35%),
+        #f8fafc;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NAVBAR (reuse homepage style) -->
+<nav class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+  <div class="flex items-center gap-3">
+    <img src="{% static 'images/logo.png' %}" class="h-10" alt="Simplifi Logo">
+  </div>
+
+  <a href="/login/"
+     class="bg-slate-900 text-white px-5 py-2 rounded-lg font-medium hover:bg-slate-800 transition">
+    Login
+  </a>
+</nav>
+
+<!-- PRICING -->
+<section class="max-w-6xl mx-auto px-6 py-24 text-center">
+
+  <p class="text-sm text-teal-700 font-medium mb-3">
+    PRICING
+  </p>
+
+  <h1 class="text-4xl md:text-5xl font-semibold mb-4">
+    Simple, honest pricing
+  </h1>
+
+  <p class="text-slate-600 mb-20 max-w-xl mx-auto">
+    Annual plans. No dark patterns. No upsells.
+    Cancel anytime.
+  </p>
+
+  <div class="grid md:grid-cols-3 gap-10">
+
+    <!-- FREE -->
+    <div class="bg-white/70 backdrop-blur
+                border border-slate-200
+                rounded-3xl p-8 text-left
+                hover:shadow-xl transition">
+
+      <h3 class="font-semibold text-lg mb-2">Free</h3>
+      <p class="text-4xl font-semibold mb-6">₹0</p>
+
+      <ul class="text-slate-600 space-y-3">
+        <li>• 1 Credit Card</li>
+        <li>• Basic reminders</li>
+        <li>• Monthly snapshot</li>
+      </ul>
+    </div>
+
+    <!-- CORE (HIGHLIGHTED) -->
+    <div class="relative bg-white
+                border-2 border-teal-600
+                rounded-3xl p-8 text-left
+                shadow-2xl scale-[1.03]">
+
+      <!-- badge -->
+      <span class="absolute -top-4 left-6
+                   bg-teal-600 text-white text-xs
+                   px-3 py-1 rounded-full">
+        MOST POPULAR
+      </span>
+
+      <h3 class="font-semibold text-lg mb-2">Core</h3>
+      <p class="text-4xl font-semibold mb-1">₹199</p>
+      <p class="text-sm text-slate-500 mb-6">per year</p>
+
+      <ul class="text-slate-700 space-y-3 mb-8">
+        <li>• Unlimited credit cards</li>
+        <li>• Smart bill reminders</li>
+        <li>• Cashflow insights</li>
+      </ul>
+
+      <a href="#"
+         class="block text-center
+                bg-gradient-to-r from-teal-600 to-cyan-500
+                text-white py-3 rounded-xl font-semibold
+                hover:opacity-90 transition">
+        Get Core
+      </a>
+    </div>
+
+    <!-- WEALTH -->
+    <div class="bg-white/70 backdrop-blur
+                border border-slate-200
+                rounded-3xl p-8 text-left
+                hover:shadow-xl transition">
+
+      <h3 class="font-semibold text-lg mb-2">Wealth</h3>
+      <p class="text-4xl font-semibold mb-1">₹599</p>
+      <p class="text-sm text-slate-500 mb-6">per year</p>
+
+      <ul class="text-slate-600 space-y-3 mb-8">
+        <li>• Everything in Core</li>
+        <li>• Goal tracking</li>
+        <li>• Financial learning (LMS)</li>
+      </ul>
+
+      <a href="#"
+         class="block text-center
+                border border-slate-300
+                py-3 rounded-xl font-semibold
+                hover:bg-slate-100 transition">
+        Get Wealth
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-slate-200 py-10 text-center text-slate-500 text-sm bg-white">
+  © {{ now|date:"Y" }} Simplifi. Your Personal CFO.
+</footer>
+
+</body>
+</html>

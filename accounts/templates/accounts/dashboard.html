@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard — Simplifi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.sidebar-link:hover {
+  background: #ecfeff;
+  color: #0891b2;
+  transform: translateX(4px);
+}
+
+.sidebar-link.active {
+  background: linear-gradient(to right, #06b6d4, #22d3ee);
+  color: white;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+.page-transition {
+  animation: fadeSlide 0.6s ease forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes fadeSlide {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+body {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+body.loaded {
+  opacity: 1;
+}
+
+</style>
+
+</head>
+
+<body class="bg-slate-50 min-h-screen flex">
+
+<div x-data="{ open: true }" class="flex w-full">
+
+  <!-- SIDEBAR -->
+  <aside 
+    :class="open ? 'w-64' : 'w-20'"
+    class="bg-white border-r border-slate-200
+           transition-all duration-300 ease-in-out
+           min-h-screen relative">
+
+    <!-- subtle glow -->
+    <div class="absolute -top-20 -left-20 w-64 h-64
+                bg-cyan-300/20 blur-3xl rounded-full"></div>
+
+    <!-- Logo -->
+<div class="flex items-center justify-between px-6 py-6">
+
+  <!-- Logo Area -->
+  <div class="flex items-center gap-3">
+
+    <!-- FULL LOGO (When Open) -->
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95">
+
+      <img src="{% static 'images/logo.png' %}"
+           class="h-10 w-auto cursor-pointer"
+           alt="Simplifi Logo"
+           @click="open = false">
+    </div>
+
+    <!-- COLLAPSED STATE (S) -->
+    <div x-show="!open"
+         x-transition
+         @click="open = true"
+         class="h-10 w-10 flex items-center justify-center
+                rounded-xl text-white font-bold text-lg
+                bg-gradient-to-br from-cyan-400 to-blue-500
+                shadow-lg shadow-cyan-200
+                cursor-pointer
+                hover:scale-105 transition">
+
+      S
+    </div>
+
+  </div>
+
+  <!-- Toggle Button (Only visible when open) -->
+  <button x-show="open"
+          @click="open = false"
+          class="text-slate-500 hover:text-black transition">
+    ☰
+  </button>
+
+</div>
+
+
+
+    <!-- Menu -->
+   <nav class="mt-8 space-y-2 px-3">
+
+  <a href="{% url 'dashboard_home' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'dashboard_home' %}active{% endif %}">
+    <span>🏠</span>
+    <span x-show="open">Home</span>
+  </a>
+
+  <a href="{% url 'finance_overview' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'finance_overview' %}active{% endif %}">
+    <span>🧠</span>
+    <span x-show="open">Optimizer</span>
+  </a>
+
+  <a href="{% url 'transactions' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
+    <span>💳</span>
+    <span x-show="open">Transactions</span>
+  </a>
+
+  <a href="{% url 'goal_dashboard' %}"
+   class="sidebar-link {% if request.resolver_match.url_name == 'goal_dashboard' %}active{% endif %}">
+    <span>🎯</span>
+    <span x-show="open">Goal Planner</span>
+</a>
+
+
+  <a href="{% url 'settings_page' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'settings_page' %}active{% endif %}">
+    <span>⚙️</span>
+    <span x-show="open">Settings</span>
+  </a>
+
+</nav>
+
+
+    <!-- Logout -->
+    <div class="absolute bottom-8 w-full px-4">
+      <a href="{% url 'logout' %}"
+         class="flex items-center gap-4 px-4 py-3 rounded-xl
+                text-red-500 hover:bg-red-50 transition">
+        <span>🚪</span>
+        <span x-show="open">Logout</span>
+      </a>
+    </div>
+
+  </aside>
+
+
+  <!-- MAIN CONTENT -->
+  <div class="flex-1">
+
+    <!-- TOP BAR -->
+    <div class="bg-white border-b border-slate-200 px-10 py-6 flex justify-between items-center">
+
+      <h1 class="text-2xl font-semibold">
+        Dashboard
+      </h1>
+
+      <div class="flex items-center gap-6">
+        <span class="text-slate-600">
+          {{ request.user.username }}
+        </span>
+      </div>
+
+    </div>
+
+
+
+<!-- CONTENT AREA -->
+<div class="px-10 py-16 page-transition">
+
+
+  {% block content %}
+  
+  <h2 class="text-4xl font-semibold mb-10">
+    Welcome back, {{ request.user.username }} 👋
+  </h2>
+
+  <div class="grid md:grid-cols-3 gap-8">
+
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+      <h3 class="font-semibold mb-3 text-slate-700">Income Range</h3>
+      <p class="text-slate-600 text-lg">
+        {{ request.user.income_range|default:"Not set" }}
+      </p>
+    </div>
+
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+      <h3 class="font-semibold mb-3 text-slate-700">Phone</h3>
+      <p class="text-slate-600 text-lg">
+        {{ request.user.phone|default:"Not set" }}
+      </p>
+    </div>
+
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+      <h3 class="font-semibold mb-3 text-slate-700">Email</h3>
+      <p class="text-slate-600 text-lg">
+        {{ request.user.email }}
+      </p>
+    </div>
+
+  </div>
+
+  {% endblock %}
+
+</div>
+
+
+  </div>
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("loaded");
+});
+</script>
+
+</body>
+</html>

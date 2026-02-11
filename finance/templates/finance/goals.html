@@ -1,0 +1,210 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+.goal-card {
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  border: 1px solid #f1f5f9;
+  transition: 0.3s ease;
+}
+
+.goal-card:hover {
+  box-shadow: 0 30px 70px rgba(0,0,0,0.05);
+  transform: translateY(-4px);
+}
+
+.progress-bar {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #06b6d4, #22d3ee);
+  transition: width 0.6s ease;
+}
+
+.summary-box {
+  background: linear-gradient(to right, #f8fafc, #ffffff);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid #f1f5f9;
+}
+
+.risk-high { color: #dc2626; }
+.risk-medium { color: #f59e0b; }
+.risk-low { color: #16a34a; }
+
+</style>
+
+<h2 class="text-3xl font-semibold mb-10">
+  🎯 Goal Planner
+</h2>
+
+<!-- SUMMARY STRIP -->
+<div class="grid md:grid-cols-4 gap-6 mb-16">
+
+  <div class="summary-box">
+    <p>Monthly Income</p>
+    <p class="text-xl font-semibold">₹ {{ monthly_income }}</p>
+  </div>
+
+  <div class="summary-box">
+    <p>Monthly Expense</p>
+    <p class="text-xl font-semibold">₹ {{ monthly_expense }}</p>
+  </div>
+
+  <div class="summary-box">
+    <p>Surplus</p>
+    <p class="text-xl font-semibold text-cyan-600">
+      ₹ {{ surplus }}
+    </p>
+  </div>
+
+  <div class="summary-box">
+    <p>Risk Level</p>
+    <p class="text-xl font-semibold
+       {% if risk_level == 'High' %}risk-high{% endif %}
+       {% if risk_level == 'Medium' %}risk-medium{% endif %}
+       {% if risk_level == 'Low' %}risk-low{% endif %}">
+       {{ risk_level }}
+    </p>
+  </div>
+
+</div>
+
+<!-- Emergency Fund Alert -->
+<div class="goal-card mb-12">
+
+  <h3 class="font-semibold text-lg mb-4">
+    🛡 Emergency Fund Rule
+  </h3>
+
+  <p>
+    Recommended emergency fund:
+    <strong>₹ {{ emergency_required }}</strong>
+    (6 months of expenses)
+  </p>
+
+</div>
+
+<!-- Goal Form -->
+<div class="goal-card mb-16">
+
+  <h3 class="font-semibold text-lg mb-6">
+    🎯 Create New Goal
+  </h3>
+
+  {% if warning %}
+  <div class="bg-red-100 text-red-600 p-4 rounded-xl mb-6">
+    {{ warning }}
+  </div>
+  {% endif %}
+
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
+    {{ form }}
+
+    <button class="bg-cyan-600 text-white px-6 py-3 rounded-xl hover:bg-cyan-700 transition">
+      Create Goal
+    </button>
+  </form>
+
+</div>
+
+<!-- Goals Grid -->
+<div class="grid md:grid-cols-2 gap-10 mb-20">
+
+{% for goal in goals %}
+
+<div class="goal-card">
+
+  <div class="flex justify-between mb-4">
+    <h4 class="font-semibold text-lg">{{ goal.name }}</h4>
+    <span class="text-sm text-slate-500">
+      {{ goal.get_goal_type_display }}
+    </span>
+  </div>
+
+  <div class="progress-bar mb-4">
+    <div class="progress-fill"
+         style="width: {{ goal.progress_percent }}%">
+    </div>
+  </div>
+
+  <div class="flex justify-between text-sm text-slate-600">
+    <span>₹ {{ goal.current_amount }}</span>
+    <span>{{ goal.progress_percent|floatformat:0 }}%</span>
+  </div>
+
+  <div class="mt-4 text-sm">
+    Required Monthly:
+    <strong>₹ {{ goal.monthly_required|floatformat:0 }}</strong>
+  </div>
+
+  <div class="mt-4 text-sm text-slate-600">
+  Predicted Completion:
+  <strong>
+    {% if goal.predicted_completion_date %}
+      {{ goal.predicted_completion_date }}
+    {% else %}
+      Not Calculated
+    {% endif %}
+  </strong>
+</div>
+
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<!-- Forecast Chart -->
+<div class="goal-card">
+
+  <h3 class="font-semibold mb-6 text-lg">
+    📈 Savings Forecast
+  </h3>
+
+  <canvas id="forecastChart"></canvas>
+
+</div>
+
+<script>
+
+const forecastData = {{ forecast_json|safe }};
+
+const datasets = forecastData.map((goal, index) => ({
+    label: goal.name,
+    data: goal.data,
+    borderColor: `hsl(${index * 60}, 70%, 50%)`,
+    tension: 0.3
+}));
+
+new Chart(document.getElementById("forecastChart"), {
+    type: "line",
+    data: {
+        labels: Array.from({length: 24}, (_, i) => `Month ${i+1}`),
+        datasets: datasets
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: "bottom"
+            }
+        }
+    }
+});
+
+</script>
+
+{% endblock %}

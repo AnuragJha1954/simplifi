@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" x-data="{ tab: 'login' }">
+<head>
+  <meta charset="UTF-8">
+  <title>Simplifi — Login</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at 15% 10%, #e6fffa, transparent 40%),
+        radial-gradient(circle at 85% 20%, #ecfeff, transparent 35%),
+        #f8fafc;
+      color: #0f172a;
+    }
+
+    .auth-card {
+      backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.7);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center px-6">
+
+  <div class="w-full max-w-md">
+
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <img src="{% static 'images/logo.png' %}" class="h-12 mx-auto mb-4">
+      <h2 class="text-3xl font-semibold">Welcome to Simplifi</h2>
+      <p class="text-slate-500 text-sm mt-2">Your Personal CFO</p>
+    </div>
+
+    <!-- Card -->
+    <div class="auth-card border border-slate-200 rounded-3xl p-8 shadow-xl">
+
+      <!-- Toggle -->
+      <div class="flex mb-8 bg-slate-100 rounded-xl p-1">
+        <button
+          @click="tab='login'"
+          :class="tab==='login' ? 'bg-white shadow text-black' : 'text-slate-500'"
+          class="flex-1 py-2 rounded-lg transition font-medium">
+          Login
+        </button>
+
+        <button
+          @click="tab='signup'"
+          :class="tab==='signup' ? 'bg-white shadow text-black' : 'text-slate-500'"
+          class="flex-1 py-2 rounded-lg transition font-medium">
+          Sign Up
+        </button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form method="POST" x-show="tab==='login'">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="login">
+
+        <div class="space-y-4">
+          <input type="email" name="email" placeholder="Email"
+            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
+
+          <input type="password" name="password" placeholder="Password"
+            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
+        </div>
+
+        <button type="submit"
+          class="mt-6 w-full bg-gradient-to-r from-teal-600 to-cyan-500 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
+          Login
+        </button>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form method="POST" x-show="tab==='signup'">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="signup">
+
+        <div class="space-y-4">
+          <input type="text" name="username" placeholder="Username"
+            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
+
+          <input type="email" name="email" placeholder="Email"
+            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
+
+          <input type="password" name="password" placeholder="Password"
+            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
+        </div>
+
+        <button type="submit"
+          class="mt-6 w-full bg-gradient-to-r from-teal-600 to-cyan-500 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
+          Create Account
+        </button>
+      </form>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

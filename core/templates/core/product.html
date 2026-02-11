@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>How Simplifi Works</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-white text-slate-900">
+
+<section class="max-w-5xl mx-auto px-6 py-24">
+
+  <h1 class="text-4xl font-semibold text-center mb-16">
+    How Simplifi works
+  </h1>
+
+  <!-- STEP 1 -->
+  <div x-data="{ show: false }"
+       x-intersect="show = true"
+       :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'"
+       class="transition-all duration-700 mb-20">
+
+    <h2 class="text-2xl font-semibold mb-2">1. Add your credit cards</h2>
+    <p class="text-slate-600">
+      Manually add cards. No bank login. Full control.
+    </p>
+  </div>
+
+  <!-- STEP 2 -->
+  <div x-data="{ show: false }"
+       x-intersect="show = true"
+       :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'"
+       class="transition-all duration-700 mb-20">
+
+    <h2 class="text-2xl font-semibold mb-2">2. See your monthly reality</h2>
+    <p class="text-slate-600">
+      Understand bills, cashflow, and free money in one place.
+    </p>
+  </div>
+
+  <!-- STEP 3 -->
+  <div x-data="{ show: false }"
+       x-intersect="show = true"
+       :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'"
+       class="transition-all duration-700">
+
+    <h2 class="text-2xl font-semibold mb-2">3. Make confident decisions</h2>
+    <p class="text-slate-600">
+      Act like a CFO — calm, informed, and in control.
+    </p>
+  </div>
+
+</section>
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simplifi — Your Personal CFO</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at 15% 10%, #e6fffa, transparent 40%),
+        radial-gradient(circle at 85% 20%, #ecfeff, transparent 35%),
+        #f8fafc;
+      color: #0f172a;
+    }
+
+    #ambient-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow {
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.35;
+    }
+
+    .glow-1 {
+      background: radial-gradient(circle, #22d3ee, transparent 60%);
+      top: -10%;
+      left: -15%;
+    }
+
+    .glow-2 {
+      background: radial-gradient(circle, #38bdf8, transparent 60%);
+      top: 30%;
+      right: -20%;
+    }
+
+    .glow-3 {
+      background: radial-gradient(circle, #0ea5e9, transparent 60%);
+      bottom: -20%;
+      left: 25%;
+    }
+
+    body > *:not(#ambient-glow) {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+
+<body x-data="{ authModal: false, tab: 'login' }"
+      @keydown.escape.window="authModal = false"
+      class="min-h-screen">
+
+<!-- GLOBAL GLOW -->
+<div id="ambient-glow">
+  <span class="glow glow-1"></span>
+  <span class="glow glow-2"></span>
+  <span class="glow glow-3"></span>
+</div>
+
+<!-- NAVBAR -->
+<nav class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+  <img src="{% static 'images/logo.png' %}" class="h-10">
+
+  {% if request.user.is_authenticated %}
+    <div class="flex items-center gap-4">
+      <a href="{% url 'dashboard' %}" class="text-sm font-medium">
+        Dashboard
+      </a>
+      <a href="{% url 'logout_user' %}"
+         class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm">
+        Logout
+      </a>
+    </div>
+  {% else %}
+    <button
+      @click="authModal = true; tab='login'"
+      class="bg-slate-900 text-white px-5 py-2 rounded-lg">
+      Login
+    </button>
+  {% endif %}
+</nav>
+
+<!-- HERO -->
+<section class="max-w-7xl mx-auto px-6 pt-24 pb-32 text-center">
+  <h1 class="text-6xl font-semibold mb-6">
+    Personal CFO for Everyday Life
+  </h1>
+
+  <p class="text-lg text-slate-600 mb-10">
+    Track bills. Control budgets. Make smarter money decisions.
+  </p>
+
+  <button
+    @click="authModal = true; tab='signup'"
+    class="bg-gradient-to-r from-teal-600 to-cyan-500
+           text-white px-10 py-4 rounded-xl text-lg font-semibold">
+    Get Started Free
+  </button>
+</section>
+
+<!-- FULLSCREEN MODAL -->
+<div x-show="authModal"
+     x-transition.opacity
+     class="fixed inset-0 z-[9999] flex items-center justify-center">
+
+  <!-- BACKDROP -->
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+       @click="authModal = false"></div>
+
+  <!-- MODAL CARD -->
+  <div x-transition
+       class="relative bg-white w-full max-w-md mx-4 rounded-2xl shadow-2xl p-8">
+
+    <!-- Close -->
+    <button @click="authModal = false"
+            class="absolute top-4 right-4 text-slate-400 hover:text-black">
+      ✕
+    </button>
+
+    <!-- Tabs -->
+    <div class="flex mb-6 border-b">
+      <button @click="tab='login'"
+              :class="tab==='login' ? 'border-b-2 border-black font-semibold' : ''"
+              class="flex-1 py-2 text-sm">
+        Login
+      </button>
+      <button @click="tab='signup'"
+              :class="tab==='signup' ? 'border-b-2 border-black font-semibold' : ''"
+              class="flex-1 py-2 text-sm">
+        Sign Up
+      </button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form x-show="tab==='login'"
+          method="POST"
+          action="{% url 'login_user' %}">
+      {% csrf_token %}
+
+      <input type="text" name="username" placeholder="Username"
+             required
+             class="w-full mb-4 p-3 border rounded-lg">
+
+      <input type="password" name="password" placeholder="Password"
+             required
+             class="w-full mb-6 p-3 border rounded-lg">
+
+      <button type="submit"
+              class="w-full bg-slate-900 text-white py-3 rounded-lg">
+        Login
+      </button>
+    </form>
+
+    <!-- SIGNUP FORM -->
+    <form x-show="tab==='signup'"
+          method="POST"
+          action="{% url 'signup_user' %}">
+      {% csrf_token %}
+
+      <input type="text" name="username" placeholder="Username"
+             required
+             class="w-full mb-4 p-3 border rounded-lg">
+
+      <input type="email" name="email" placeholder="Email"
+             required
+             class="w-full mb-4 p-3 border rounded-lg">
+
+      <input type="password" name="password1" placeholder="Password"
+             required
+             class="w-full mb-4 p-3 border rounded-lg">
+
+      <input type="password" name="password2" placeholder="Confirm Password"
+             required
+             class="w-full mb-4 p-3 border rounded-lg">
+
+      <input type="text" name="phone" placeholder="Phone"
+             class="w-full mb-4 p-3 border rounded-lg">
+
+      <select name="income_range"
+              class="w-full mb-6 p-3 border rounded-lg">
+        <option value="">Income Range</option>
+        <option value="<5L">Below 5L</option>
+        <option value="5-10L">5–10L</option>
+        <option value="10-25L">10–25L</option>
+        <option value="25L+">25L+</option>
+      </select>
+
+      <button type="submit"
+              class="w-full bg-slate-900 text-white py-3 rounded-lg">
+        Create Account
+      </button>
+    </form>
+
+  </div>
+</div>
+
+<footer class="border-t border-slate-200 py-10 text-center text-slate-500 text-sm bg-white">
+  © {{ now|date:"Y" }} Simplifi.
+</footer>
+
+</body>
+</html>
