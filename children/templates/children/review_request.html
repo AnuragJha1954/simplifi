@@ -1,60 +1,283 @@
 {% extends "accounts/dashboard.html" %}
 {% block content %}
 
-<h2 class="text-xl font-semibold mb-6">
-Review Request
-</h2>
+<style>
+  .review-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 900px;
+  }
 
-<div class="bg-white border rounded-xl p-6 max-w-lg">
+  .review-detail-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 28px;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+  }
 
-<p class="mb-2">
-Child: {{ req.child.child_user.username }}
-</p>
+  .review-detail-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
 
-<p class="mb-2">
-Category: {{ req.category.name }}
-</p>
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
 
-<p class="mb-2">
-Amount: ₹{{ req.amount }}
-</p>
+  .detail-row:last-child { border: none; }
 
-<p class="mb-4">
-Reason: {{ req.reason }}
-</p>
+  .detail-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    min-width: 90px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
 
-<form method="POST">
+  .detail-val {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.5;
+  }
 
-{% csrf_token %}
+  .detail-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 20px var(--cyan-glow);
+  }
 
-<textarea
-name="note"
-placeholder="Optional note"
-class="w-full border rounded-xl px-4 py-3 mb-4"></textarea>
+  .child-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-<div class="flex gap-4">
+  .child-av {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--teal));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    color: #000;
+    box-shadow: 0 0 8px var(--cyan-glow);
+    flex-shrink: 0;
+  }
 
-<button
-name="action"
-value="approve"
-class="bg-green-500 text-white px-4 py-2 rounded">
+  /* Action card */
+  .review-action-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 28px;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) 0.12s both;
+    height: fit-content;
+  }
 
-Approve
+  .review-action-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
 
-</button>
+  .note-textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-3);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 16px;
+    resize: vertical;
+    min-height: 100px;
+  }
 
-<button
-name="action"
-value="reject"
-class="bg-red-500 text-white px-4 py-2 rounded">
+  .note-textarea:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+    background: var(--bg-2);
+  }
 
-Reject
+  .note-textarea::placeholder { color: var(--ink-3); }
 
-</button>
+  .action-btns {
+    display: flex;
+    gap: 10px;
+  }
 
+  .btn-approve {
+    flex: 1;
+    padding: 11px;
+    background: rgba(16,185,129,0.1);
+    color: var(--green);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.04em;
+  }
+
+  .btn-approve::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--green);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .btn-approve:hover::before { transform: translateX(0); }
+  .btn-approve:hover { color: #000; }
+  .btn-approve span { position: relative; z-index: 1; }
+
+  .btn-reject {
+    flex: 1;
+    padding: 11px;
+    background: rgba(239,68,68,0.1);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.04em;
+  }
+
+  .btn-reject::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--red);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .btn-reject:hover::before { transform: translateX(0); }
+  .btn-reject:hover { color: #fff; }
+  .btn-reject span { position: relative; z-index: 1; }
+
+  .decision-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    text-align: center;
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  .note-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+    display: block;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Review Request</div>
+    <div class="page-subtitle">// APPROVE OR REJECT FUND REQUEST</div>
+  </div>
 </div>
 
-</form>
+<div class="review-wrap">
+
+  <!-- Request Details -->
+  <div class="review-detail-card">
+    <div class="section-title" style="margin-bottom:18px;">
+      <div class="section-icon">≡</div>
+      Request Details
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-key">Child</span>
+      <div class="child-identity">
+        <div class="child-av">{{ req.child.child_user.username|first|upper }}</div>
+        <span class="detail-val">{{ req.child.child_user.username }}</span>
+      </div>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-key">Category</span>
+      <span class="detail-val">{{ req.category.name }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-key">Amount</span>
+      <span class="detail-amount">₹{{ req.amount }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-key">Reason</span>
+      <span class="detail-val" style="color:var(--ink-2);line-height:1.7;">{{ req.reason }}</span>
+    </div>
+  </div>
+
+  <!-- Action Panel -->
+  <div class="review-action-card">
+    <div class="section-title" style="margin-bottom:18px;">
+      <div class="section-icon">◈</div>
+      Your Decision
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <label class="note-label">Optional Note to Child</label>
+      <textarea class="note-textarea" name="note" placeholder="e.g. Approved for the school trip. Spend wisely!"></textarea>
+
+      <div class="action-btns">
+        <button type="submit" name="action" value="approve" class="btn-approve">
+          <span>✓ Approve</span>
+        </button>
+        <button type="submit" name="action" value="reject" class="btn-reject">
+          <span>✕ Reject</span>
+        </button>
+      </div>
+
+      <div class="decision-hint">// This action will notify the child and update their dashboard</div>
+    </form>
+  </div>
 
 </div>
 

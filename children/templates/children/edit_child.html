@@ -1,28 +1,144 @@
 {% extends "accounts/dashboard.html" %}
 {% block content %}
 
-<div class="max-w-xl">
+<style>
+  .simple-form-wrap { max-width: 500px; }
 
-  <h2 class="text-2xl font-semibold mb-6">
-    Edit Child — {{ child.child_user.username }}
-  </h2>
+  .simple-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 30px;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+  }
 
-  <form method="POST" class="bg-white border rounded-2xl p-8 space-y-6">
-    {% csrf_token %}
+  .simple-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
 
-    <div>
-      <label class="text-sm text-slate-600">Age</label>
-      <input type="number" name="age" value="{{ child.age }}"
-        class="w-full mt-2 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-200 focus:border-cyan-500">
+  .child-id-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .child-id-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--teal));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: #000;
+    box-shadow: 0 0 8px var(--cyan-glow);
+    flex-shrink: 0;
+  }
+
+  .child-id-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .child-id-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .field-group { margin-bottom: 16px; }
+
+  .field-group label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+
+  .field-group input {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-3);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .field-group input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+    background: var(--bg-2);
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .btn-back {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+
+  .btn-back:hover { color: var(--cyan); }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Edit Child</div>
+    <div class="page-subtitle">// UPDATE PROFILE DETAILS</div>
+  </div>
+</div>
+
+<div class="simple-form-wrap">
+  <div class="simple-card">
+
+    <div class="child-id-row">
+      <div class="child-id-avatar">{{ child.child_user.username|first|upper }}</div>
+      <div>
+        <div class="child-id-name">{{ child.child_user.username }}</div>
+        <div class="child-id-sub">Child Account</div>
+      </div>
     </div>
 
-    <button type="submit"
-      class="bg-cyan-500 text-white px-6 py-3 rounded-xl hover:bg-cyan-600">
-      Save Changes
-    </button>
+    <form method="POST">
+      {% csrf_token %}
 
-  </form>
+      <div class="field-group">
+        <label>Age</label>
+        <input type="number" name="age" value="{{ child.age }}" min="1" max="25">
+      </div>
 
+      <div class="form-actions">
+        <button type="submit" class="submit-btn"><span>Save Changes →</span></button>
+        <a href="{% url 'children_list' %}" class="btn-back">← Back</a>
+      </div>
+    </form>
+
+  </div>
 </div>
 
 {% endblock %}

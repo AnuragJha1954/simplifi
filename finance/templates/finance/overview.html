@@ -4,422 +4,345 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-  .page-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 30px;
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 8px;
-  }
-
-  .page-subtitle {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 48px;
-  }
-
-  /* Floating ambient glow */
+  /* Ambient glow */
   .ambient-glow {
     position: fixed;
-    top: 10vh;
-    right: -100px;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle at center, rgba(6,182,212,0.1), transparent 65%);
+    top: 10vh; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(6,182,212,0.06), transparent 65%);
     pointer-events: none;
     animation: driftGlow 14s ease-in-out infinite;
     z-index: 0;
   }
 
   @keyframes driftGlow {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50%       { transform: translateY(-30px) scale(1.05); }
+    0%,100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-30px) scale(1.05); }
   }
 
   .content-wrap { position: relative; z-index: 1; }
 
-  /* ── Summary Strip ── */
+  /* Summary strip */
   .summary-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 40px;
+    gap: 12px;
+    margin-bottom: 20px;
   }
 
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 24px 22px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: pageEnter 0.5s cubic-bezier(0.16,1,0.3,1) both;
-  }
-
-  .stat-card:nth-child(1) { animation-delay: 0.05s; }
-  .stat-card:nth-child(2) { animation-delay: 0.12s; }
-  .stat-card:nth-child(3) { animation-delay: 0.19s; }
-  .stat-card:nth-child(4) { animation-delay: 0.26s; }
-
-  .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.06);
-  }
-
-  .stat-accent {
-    position: absolute;
-    top: 0; right: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--cyan), #22d3ee);
-    border-radius: 0 18px 18px 0;
-  }
-
-  .stat-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 10px;
-  }
-
-  .stat-value {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .stat-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 6px;
-  }
-
-  /* Risk badge */
-  .risk-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-top: 6px;
-  }
-
-  .risk-low    { background: #ecfdf5; color: #059669; }
-  .risk-medium { background: #fffbeb; color: #d97706; }
-  .risk-high   { background: #fef2f2; color: #dc2626; }
-
-  /* ── Section card ── */
-  .section-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 30px 32px;
-    transition: box-shadow 0.3s ease;
-    animation: pageEnter 0.5s cubic-bezier(0.16,1,0.3,1) both;
-  }
-
-  .section-card:hover {
-    box-shadow: 0 12px 40px rgba(0,0,0,0.05);
-  }
-
-  .section-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 22px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .section-icon {
-    width: 30px; height: 30px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #ecfeff, #cffafe);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-  }
-
-  /* Chart container */
+  /* Chart canvas */
   .chart-wrap {
     position: relative;
-    height: 260px;
+    height: 240px;
   }
 
-  /* Grid helpers */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-  .one-col  { margin-bottom: 24px; }
-
-  /* ── Optimizer card ── */
+  /* Optimizer rows */
   .optimizer-row {
     display: flex;
     align-items: baseline;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
   }
 
-  .optimizer-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
+  .optimizer-row:last-child { border: none; }
 
   .optimizer-label {
-    font-size: 13px;
-    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
     min-width: 130px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   .optimizer-value {
+    font-family: 'Syne', sans-serif;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--ink);
   }
 
-  /* ── Slider ── */
+  /* Slider */
   .slider-track {
     width: 100%;
-    margin: 16px 0 10px;
+    margin: 14px 0 8px;
     accent-color: var(--cyan);
     cursor: pointer;
+    height: 4px;
   }
 
   .slider-display {
     font-family: 'Syne', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--ink);
-    margin-top: 6px;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--cyan);
+    text-shadow: 0 0 20px var(--cyan-glow);
   }
 
   .slider-label {
-    font-size: 12px;
-    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
     margin-top: 4px;
+    text-transform: uppercase;
   }
 
-  /* ── Credit sim rows ── */
+  /* Credit sim rows */
   .credit-row {
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
   }
 
-  .credit-row:last-child { border: none; padding-bottom: 0; }
+  .credit-row:last-child { border: none; }
 
   .credit-name {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--ink);
     margin-bottom: 6px;
   }
 
   .credit-meta {
     display: flex;
-    gap: 20px;
+    gap: 8px;
     flex-wrap: wrap;
   }
 
   .credit-pill {
-    font-size: 12px;
-    color: var(--muted);
-    background: var(--ground);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    background: var(--bg-3);
     border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 3px 10px;
+    border-radius: 4px;
+    padding: 3px 9px;
+    letter-spacing: 0.04em;
   }
 
-  /* ── Alerts ── */
+  /* Alerts */
   .alert-item {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-    color: #dc2626;
-    animation: pageEnter 0.4s ease both;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+    color: #fca5a5;
   }
 
-  .alert-item:last-child { border: none; padding-bottom: 0; }
+  .alert-item:last-child { border: none; }
 
   .alert-dot {
-    width: 7px; height: 7px;
+    width: 6px; height: 6px;
     border-radius: 50%;
-    background: #dc2626;
+    background: var(--red);
+    box-shadow: 0 0 6px var(--red);
     flex-shrink: 0;
-    margin-top: 5px;
+    margin-top: 4px;
   }
 
   .alert-ok {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #059669;
-    font-size: 14px;
-    font-weight: 500;
+    color: var(--green);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
   }
 
-  .mono { font-variant-numeric: tabular-nums; }
+  /* Debt-free big number */
+  .debt-big {
+    font-family: 'Syne', sans-serif;
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%,100% { text-shadow: none; }
+    50%     { text-shadow: 0 0 30px rgba(6,182,212,0.3); }
+  }
+
+  /* Risk badge inline */
+  .risk-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .risk-low    { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+  .risk-medium { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+  .risk-high   { background: rgba(239,68,68,0.12);  color: var(--red);   border: 1px solid rgba(239,68,68,0.2); }
 </style>
 
 <div class="ambient-glow"></div>
 
 <div class="content-wrap">
 
-  <p class="page-title">Financial Intelligence</p>
-  <p class="page-subtitle">Your complete financial health overview and optimizer.</p>
-
-  <!-- SUMMARY STRIP -->
-  <div class="summary-strip">
-    <div class="stat-card">
-      <div class="stat-accent"></div>
-      <p class="stat-label">Monthly Income</p>
-      <p class="stat-value mono">₹{{ summary.monthly_income }}</p>
-    </div>
-    <div class="stat-card">
-      <div class="stat-accent"></div>
-      <p class="stat-label">Total EMI</p>
-      <p class="stat-value mono">₹{{ summary.total_emi }}</p>
-    </div>
-    <div class="stat-card">
-      <div class="stat-accent"></div>
-      <p class="stat-label">Surplus</p>
-      <p class="stat-value mono">₹{{ summary.surplus }}</p>
-    </div>
-    <div class="stat-card">
-      <div class="stat-accent"></div>
-      <p class="stat-label">Risk Level</p>
-      <p class="stat-value">{{ summary.risk_level }}</p>
-      <p class="stat-sub">Liquidity Risk: {{ summary.liquidity_probability }}%</p>
-    </div>
+<div class="page-header">
+  <div>
+    <div class="page-title">Financial Intelligence</div>
+    <div class="page-subtitle">// OPTIMIZER · CIBIL SIMULATOR · SMART ALERTS</div>
   </div>
-
-  <!-- CHARTS ROW -->
-  <div class="two-col">
-    <div class="section-card" style="animation-delay:0.1s">
-      <h3 class="section-title">
-        <span class="section-icon">🔄</span>
-        Cashflow Breakdown
-      </h3>
-      <div class="chart-wrap">
-        <canvas id="cashflowChart"></canvas>
-      </div>
-    </div>
-
-    <div class="section-card" style="animation-delay:0.18s">
-      <h3 class="section-title">
-        <span class="section-icon">📊</span>
-        Estimated CIBIL Score
-      </h3>
-      <div class="chart-wrap">
-        <canvas id="cibilChart"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- EMI OPTIMIZER -->
-  {% if summary.emi_optimizer %}
-  <div class="one-col">
-    <div class="section-card" style="animation-delay:0.22s">
-      <h3 class="section-title">
-        <span class="section-icon">⚡</span>
-        EMI Prepayment Strategy
-      </h3>
-      <div class="optimizer-row">
-        <span class="optimizer-label">Close First</span>
-        <span class="optimizer-value">{{ summary.emi_optimizer.close_first }}</span>
-      </div>
-      <div class="optimizer-row">
-        <span class="optimizer-label">Months Saved</span>
-        <span class="optimizer-value">{{ summary.emi_optimizer.months_saved }} months</span>
-      </div>
-      <div class="optimizer-row">
-        <span class="optimizer-label">Interest Saved</span>
-        <span class="optimizer-value mono">₹{{ summary.emi_optimizer.interest_saved }}</span>
-      </div>
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- SLIDER + DEBT FREE ROW -->
-  <div class="two-col">
-
-    <div class="section-card" style="animation-delay:0.26s">
-      <h3 class="section-title">
-        <span class="section-icon">🎚</span>
-        EMI Prepayment Simulator
-      </h3>
-      <p class="slider-label" style="margin-bottom: 4px;">Drag to simulate extra monthly payment</p>
-      <input type="range" min="0" max="20000" step="1000"
-             id="extraPayment" class="slider-track">
-      <p class="slider-display">₹<span id="extraValue">0</span></p>
-      <p class="slider-label">Simulating faster debt closure</p>
-    </div>
-
-    <div class="section-card" style="animation-delay:0.3s">
-      <h3 class="section-title">
-        <span class="section-icon">🏁</span>
-        Debt-Free Projection
-      </h3>
-      <p style="font-size:13px; color:var(--muted); margin-bottom: 12px;">At your current repayment pace</p>
-      <p style="font-size:42px; font-family:'Syne',sans-serif; font-weight:800; color:var(--ink); line-height:1;">
-        {{ debt_free_months }}
-      </p>
-      <p style="font-size:14px; color:var(--muted); margin-top:6px;">months to debt freedom</p>
-    </div>
-
-  </div>
-
-  <!-- CREDIT SIM -->
-  <div class="one-col">
-    <div class="section-card" style="animation-delay:0.34s">
-      <h3 class="section-title">
-        <span class="section-icon">💳</span>
-        Credit Utilisation Simulator
-      </h3>
-      {% for card in summary.credit_simulation %}
-      <div class="credit-row">
-        <p class="credit-name">{{ card.card }}</p>
-        <div class="credit-meta">
-          <span class="credit-pill">Utilisation: {{ card.utilization }}%</span>
-          <span class="credit-pill">CIBIL Impact: {{ card.cibil_impact }}</span>
-          <span class="credit-pill mono">Optimal Payment: ₹{{ card.optimal_payment }}</span>
-        </div>
-      </div>
-      {% empty %}
-      <p style="font-size:14px; color:var(--muted);">No credit cards added.</p>
-      {% endfor %}
-    </div>
-  </div>
-
-  <!-- SMART ALERTS -->
-  <div class="one-col">
-    <div class="section-card" style="animation-delay:0.38s">
-      <h3 class="section-title">
-        <span class="section-icon">🔔</span>
-        Smart Alerts
-      </h3>
-      {% for alert in summary.alerts %}
-      <div class="alert-item">
-        <div class="alert-dot"></div>
-        {{ alert }}
-      </div>
-      {% empty %}
-      <div class="alert-ok">
-        <span>✓</span> All financial metrics are stable.
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-
 </div>
 
-<!-- CHART SCRIPTS -->
+<!-- SUMMARY STRIP -->
+<div class="summary-strip">
+  <div class="stat-card delay-1">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Monthly Income</div>
+    <div class="stat-value mono">₹{{ summary.monthly_income }}</div>
+  </div>
+  <div class="stat-card delay-2">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Total EMI</div>
+    <div class="stat-value mono">₹{{ summary.total_emi }}</div>
+  </div>
+  <div class="stat-card delay-3">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Surplus</div>
+    <div class="stat-value mono">₹{{ summary.surplus }}</div>
+  </div>
+  <div class="stat-card delay-4">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Risk Level</div>
+    <div class="stat-value">
+      <span class="risk-badge risk-{{ summary.risk_level|lower }}">{{ summary.risk_level }}</span>
+    </div>
+    <div class="stat-sub">Liquidity: {{ summary.liquidity_probability }}%</div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="two-col">
+  <div class="section-card delay-1">
+    <div class="section-title">
+      <div class="section-icon">◈</div>
+      Cashflow Breakdown
+    </div>
+    <div class="chart-wrap">
+      <canvas id="cashflowChart"></canvas>
+    </div>
+  </div>
+
+  <div class="section-card delay-2">
+    <div class="section-title">
+      <div class="section-icon">▦</div>
+      CIBIL Score Trajectory
+    </div>
+    <div class="chart-wrap">
+      <canvas id="cibilChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- EMI OPTIMIZER -->
+{% if summary.emi_optimizer %}
+<div class="one-col">
+  <div class="section-card delay-3">
+    <div class="section-title">
+      <div class="section-icon">⚡</div>
+      EMI Prepayment Strategy
+    </div>
+    <div class="optimizer-row">
+      <span class="optimizer-label">Close First</span>
+      <span class="optimizer-value">{{ summary.emi_optimizer.close_first }}</span>
+    </div>
+    <div class="optimizer-row">
+      <span class="optimizer-label">Months Saved</span>
+      <span class="optimizer-value">{{ summary.emi_optimizer.months_saved }} months</span>
+    </div>
+    <div class="optimizer-row">
+      <span class="optimizer-label">Interest Saved</span>
+      <span class="optimizer-value mono">₹{{ summary.emi_optimizer.interest_saved }}</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- SLIDER + DEBT FREE -->
+<div class="two-col">
+  <div class="section-card delay-2">
+    <div class="section-title">
+      <div class="section-icon">◎</div>
+      EMI Prepayment Simulator
+    </div>
+    <div class="slider-label" style="margin-bottom:6px;">Extra monthly payment</div>
+    <input type="range" min="0" max="20000" step="1000" id="extraPayment" class="slider-track">
+    <div class="slider-display">₹<span id="extraValue">0</span></div>
+    <div class="slider-label">Simulating faster debt closure</div>
+  </div>
+
+  <div class="section-card delay-3">
+    <div class="section-title">
+      <div class="section-icon">◉</div>
+      Debt-Free Projection
+    </div>
+    <div style="margin-top:8px;">
+      <div class="debt-big">{{ debt_free_months }}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);margin-top:8px;letter-spacing:0.08em;text-transform:uppercase;">months to debt freedom</div>
+    </div>
+  </div>
+</div>
+
+<!-- CREDIT SIM -->
+<div class="one-col">
+  <div class="section-card delay-4">
+    <div class="section-title">
+      <div class="section-icon">⊞</div>
+      Credit Utilisation Simulator
+    </div>
+    {% for card in summary.credit_simulation %}
+    <div class="credit-row">
+      <div class="credit-name">{{ card.card }}</div>
+      <div class="credit-meta">
+        <span class="credit-pill">Utilisation: {{ card.utilization }}%</span>
+        <span class="credit-pill">CIBIL Impact: {{ card.cibil_impact }}</span>
+        <span class="credit-pill mono">Optimal: ₹{{ card.optimal_payment }}</span>
+      </div>
+    </div>
+    {% empty %}
+    <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);">// No credit cards added.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ALERTS -->
+<div class="one-col">
+  <div class="section-card delay-5">
+    <div class="section-title">
+      <div class="section-icon">▲</div>
+      Smart Alerts
+    </div>
+    {% for alert in summary.alerts %}
+    <div class="alert-item">
+      <div class="alert-dot"></div>
+      {{ alert }}
+    </div>
+    {% empty %}
+    <div class="alert-ok">
+      <span>✓</span> ALL FINANCIAL METRICS NOMINAL
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+</div><!-- end content-wrap -->
+
 <script>
+  // Chart defaults for dark theme
+  Chart.defaults.color = '#4a6080';
+  Chart.defaults.borderColor = 'rgba(6,182,212,0.08)';
+
   const cashflowCtx = document.getElementById('cashflowChart');
   new Chart(cashflowCtx, {
     type: 'doughnut',
@@ -432,20 +355,27 @@
           {{ summary.subscriptions|default:0 }},
           {{ summary.surplus|default:0 }}
         ],
-        backgroundColor: ['#0891b2', '#22d3ee', '#67e8f9', '#ecfeff'],
-        borderWidth: 0,
-        hoverOffset: 8
+        backgroundColor: ['#0891b2','#06b6d4','#22d3ee','#67e8f9'],
+        borderColor: '#131e2e',
+        borderWidth: 3,
+        hoverOffset: 10
       }]
     },
     options: {
-      cutout: '68%',
+      cutout: '72%',
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { font: { family: 'DM Sans', size: 12 }, padding: 16 }
+          labels: {
+            font: { family: 'JetBrains Mono', size: 10 },
+            padding: 14,
+            color: '#4a6080',
+            usePointStyle: true,
+            pointStyleWidth: 8
+          }
         }
       },
-      animation: { duration: 900, easing: 'easeOutQuart' }
+      animation: { duration: 1000, easing: 'easeOutQuart' }
     }
   });
 
@@ -455,7 +385,7 @@
     data: {
       labels: ['Now', '+3mo', '+6mo', '+9mo', '+12mo'],
       datasets: [{
-        label: 'Estimated CIBIL',
+        label: 'CIBIL Score',
         data: [
           {{ cibil_score|default:750 }},
           {{ cibil_score|default:750 }},
@@ -464,10 +394,12 @@
           {{ cibil_score|default:750 }}
         ],
         borderColor: '#06b6d4',
-        backgroundColor: 'rgba(6,182,212,0.08)',
-        borderWidth: 2.5,
-        pointBackgroundColor: '#06b6d4',
-        pointRadius: 4,
+        backgroundColor: 'rgba(6,182,212,0.06)',
+        borderWidth: 2,
+        pointBackgroundColor: '#131e2e',
+        pointBorderColor: '#06b6d4',
+        pointBorderWidth: 2,
+        pointRadius: 5,
         tension: 0.4,
         fill: true
       }]
@@ -476,18 +408,16 @@
       scales: {
         y: {
           min: 300, max: 900,
-          grid: { color: 'rgba(0,0,0,0.04)' },
-          ticks: { font: { family: 'DM Sans', size: 11 } }
+          grid: { color: 'rgba(6,182,212,0.06)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#4a6080' }
         },
         x: {
           grid: { display: false },
-          ticks: { font: { family: 'DM Sans', size: 11 } }
+          ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#4a6080' }
         }
       },
-      plugins: {
-        legend: { display: false }
-      },
-      animation: { duration: 900, easing: 'easeOutQuart' }
+      plugins: { legend: { display: false } },
+      animation: { duration: 1000, easing: 'easeOutQuart' }
     }
   });
 
@@ -495,6 +425,9 @@
   const output = document.getElementById('extraValue');
   slider.oninput = function() {
     output.textContent = Number(this.value).toLocaleString('en-IN');
+    output.style.textShadow = '0 0 20px rgba(6,182,212,0.6)';
+    clearTimeout(slider._t);
+    slider._t = setTimeout(() => output.style.textShadow = '', 300);
   };
 </script>
 

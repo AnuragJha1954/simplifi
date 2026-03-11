@@ -1,164 +1,300 @@
 {% extends "accounts/dashboard.html" %}
 {% block content %}
 
-<h2 class="text-2xl font-semibold mb-8">
-Children Overview 👨‍👩‍👧
-</h2>
+<style>
+  /* Children overview cards */
+  .children-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 8px;
+  }
 
+  .child-overview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  }
 
-<!-- SUMMARY CARDS -->
+  .child-overview-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
 
-<div class="grid md:grid-cols-3 gap-6 mb-10">
+  .child-overview-card:hover {
+    border-color: var(--border-2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(6,182,212,0.08);
+  }
 
-<div class="info-card">
-<p class="info-card-label">TOTAL CHILDREN</p>
-<p class="text-3xl font-semibold">
-{{ total_children }}
-</p>
+  .child-overview-card:hover::before { opacity: 1; }
+  .child-overview-card:nth-child(1) { animation-delay: 0.05s; }
+  .child-overview-card:nth-child(2) { animation-delay: 0.12s; }
+  .child-overview-card:nth-child(3) { animation-delay: 0.19s; }
+  .child-overview-card:nth-child(4) { animation-delay: 0.26s; }
+
+  .coc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .coc-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .coc-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--teal));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: #000;
+    box-shadow: 0 0 10px var(--cyan-glow);
+    flex-shrink: 0;
+  }
+
+  .coc-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .coc-age {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-3);
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .coc-allowance {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 4px;
+  }
+
+  .coc-alloc-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .coc-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 14px;
+  }
+
+  /* Spending bars */
+  .spend-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+  }
+
+  .spend-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+
+  .spend-row {}
+
+  .spend-row-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .spend-row-name { color: var(--ink-2); }
+  .spend-row-amt { font-family: 'JetBrains Mono', monospace; color: var(--ink-3); font-size: 11px; }
+
+  .spend-bar-track {
+    height: 2px;
+    background: var(--bg-3);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .spend-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), var(--cyan));
+    border-radius: 999px;
+    box-shadow: 0 0 4px var(--cyan-glow);
+    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  /* Request status */
+  .coc-request-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+
+  .rs-pending { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--amber); }
+  .rs-clear   { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); color: var(--green); }
+
+  .rs-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* Action buttons */
+  .coc-actions { display: flex; gap: 8px; }
+
+  .coc-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  .coc-btn-primary {
+    background: var(--cyan-dim);
+    border: 1px solid var(--border-2);
+    color: var(--cyan);
+  }
+
+  .coc-btn-primary:hover { background: rgba(6,182,212,0.2); }
+
+  .coc-btn-secondary {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    color: var(--ink-2);
+  }
+
+  .coc-btn-secondary:hover {
+    border-color: var(--border-2);
+    color: var(--ink);
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Children Overview</div>
+    <div class="page-subtitle">// FAMILY FINANCE DASHBOARD</div>
+  </div>
 </div>
 
-
-<div class="info-card">
-<p class="info-card-label">TOTAL ALLOWANCE</p>
-<p class="text-3xl font-semibold text-cyan-600">
-₹{{ total_allowance|floatformat:2 }}
-</p>
+<!-- SUMMARY STRIP -->
+<div class="summary-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+  <div class="stat-card delay-1">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Total Children</div>
+    <div class="stat-value">{{ total_children }}</div>
+  </div>
+  <div class="stat-card delay-2">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Total Allowance</div>
+    <div class="stat-value mono">₹{{ total_allowance|floatformat:2 }}</div>
+  </div>
+  <div class="stat-card delay-3">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Pending Requests</div>
+    <div class="stat-value" style="{% if total_pending_requests > 0 %}color:var(--amber);{% endif %}">
+      {{ total_pending_requests }}
+    </div>
+    {% if total_pending_requests > 0 %}
+    <div class="stat-sub" style="color:var(--amber);">Needs review</div>
+    {% endif %}
+  </div>
 </div>
 
+<!-- CHILDREN CARDS -->
+{% if children_data %}
+<div class="children-overview-grid">
+  {% for data in children_data %}
+  <div class="child-overview-card">
 
-<div class="info-card">
-<p class="info-card-label">PENDING REQUESTS</p>
-<p class="text-3xl font-semibold">
-{{ total_pending_requests }}
-</p>
+    <div class="coc-header">
+      <div class="coc-identity">
+        <div class="coc-avatar">{{ data.child.child_user.username|first|upper }}</div>
+        <div class="coc-name">{{ data.child.child_user.username }}</div>
+      </div>
+      <span class="coc-age">AGE {{ data.child.age }}</span>
+    </div>
+
+    <div class="coc-allowance">₹{{ data.total|floatformat:2 }}</div>
+    <div class="coc-alloc-label">// Total Allocated</div>
+
+    <div class="coc-divider"></div>
+
+    <div class="spend-label">Spending Breakdown</div>
+    <div class="spend-rows">
+      {% for cat in data.categories %}
+      <div class="spend-row">
+        <div class="spend-row-header">
+          <span class="spend-row-name">{{ cat.name }}</span>
+          <span class="spend-row-amt">₹{{ cat.amount }}</span>
+        </div>
+        <div class="spend-bar-track">
+          <div class="spend-bar-fill" style="width:{{ cat.percent }}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="coc-request-status {% if data.pending_requests > 0 %}rs-pending{% else %}rs-clear{% endif %}">
+      <div class="rs-dot"></div>
+      {% if data.pending_requests > 0 %}
+        {{ data.pending_requests }} request pending review
+      {% else %}
+        No pending requests
+      {% endif %}
+    </div>
+
+    <div class="coc-actions">
+      <a href="{% url 'manage_allowance' data.child.id %}" class="coc-btn coc-btn-primary">
+        Manage Allowance
+      </a>
+      <a href="{% url 'children_list' %}" class="coc-btn coc-btn-secondary">
+        Manage
+      </a>
+    </div>
+
+  </div>
+  {% endfor %}
 </div>
-
-</div>
-
-
-
-<!-- CHILD CARDS -->
-
-<div class="grid md:grid-cols-2 gap-8">
-
-{% for data in children_data %}
-
-<div class="bg-white border rounded-xl p-6 hover:shadow-md transition">
-
-<!-- CHILD HEADER -->
-
-<div class="flex justify-between items-center mb-4">
-
-<h3 class="text-lg font-semibold">
-👶 {{ data.child.child_user.username }}
-</h3>
-
-<span class="text-sm text-slate-500">
-Age {{ data.child.age }}
-</span>
-
-</div>
-
-
-<!-- TOTAL ALLOWANCE -->
-
-<p class="text-sm text-slate-500">
-Total Allowance
-</p>
-
-<p class="text-2xl font-semibold text-cyan-600 mb-4">
-₹{{ data.total|floatformat:2 }}
-</p>
-
-
-
-<!-- SPENDING ANALYTICS -->
-
-<h4 class="text-sm text-slate-500 mb-3">
-Spending Breakdown
-</h4>
-
-<div class="space-y-3 mb-4">
-
-{% for cat in data.categories %}
-
-<div>
-
-<div class="flex justify-between text-sm mb-1">
-
-<span class="text-slate-600">
-{{ cat.name }}
-</span>
-
-<span class="font-medium">
-₹{{ cat.amount }}
-</span>
-
-</div>
-
-<div class="w-full bg-slate-100 rounded-full h-2">
-
-<div
-class="bg-cyan-500 h-2 rounded-full"
-style="width: {{ cat.percent }}%">
-</div>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-
-
-<!-- REQUEST STATUS -->
-
-{% if data.pending_requests > 0 %}
-
-<div class="text-yellow-600 text-sm font-medium mb-4">
-⏳ {{ data.pending_requests }} request pending
-</div>
-
 {% else %}
-
-<div class="text-green-600 text-sm font-medium mb-4">
-✔ No pending requests
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-3);padding:40px 0;text-align:center;">
+  // No children added yet
 </div>
-
 {% endif %}
-
-
-
-<!-- ACTION BUTTONS -->
-
-<div class="flex gap-3">
-
-<a
-href="{% url 'manage_allowance' data.child.id %}"
-class="bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm">
-
-Manage Allowance
-
-</a>
-
-
-<a
-href="{% url 'children_list' %}"
-class="border border-slate-300 px-4 py-2 rounded-lg text-sm">
-
-Manage Children
-
-</a>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-</div>
-
 
 {% endblock %}

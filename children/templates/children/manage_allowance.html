@@ -1,68 +1,191 @@
 {% extends "accounts/dashboard.html" %}
 {% block content %}
 
-<h2 class="text-2xl font-semibold mb-6">
-Manage Allowance — {{ child.child_user.username }}
-</h2>
+<style>
+  .manage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 8px;
+  }
 
-<div class="grid md:grid-cols-2 gap-8">
+  .manage-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  }
 
-<div class="bg-white border rounded-2xl p-6">
+  .manage-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
 
-<h3 class="font-semibold mb-4">Add Allowance</h3>
+  .manage-card:nth-child(1) { animation-delay: 0.05s; }
+  .manage-card:nth-child(2) { animation-delay: 0.12s; }
 
-<form method="POST" class="space-y-4">
-{% csrf_token %}
+  .manage-card input,
+  .manage-card select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-3);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 10px;
+  }
 
-<input type="text" name="category"
-placeholder="Category (Trips / Lunch / Pocket Money)"
-class="w-full border rounded-xl px-4 py-3">
+  .manage-card input:focus,
+  .manage-card select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+    background: var(--bg-2);
+  }
 
-<input type="number" name="amount"
-placeholder="Amount"
-class="w-full border rounded-xl px-4 py-3">
+  .manage-card input::placeholder { color: var(--ink-3); }
 
-<button
-class="bg-cyan-500 text-white px-5 py-3 rounded-xl">
-Add Allowance
-</button>
+  /* Total bar */
+  .total-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--cyan-dim);
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
 
-</form>
+  .total-bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cyan);
+  }
 
+  .total-bar-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Category rows */
+  .cat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+    border-radius: 4px;
+    padding-left: 6px; padding-right: 4px;
+  }
+
+  .cat-row:last-child { border-bottom: none; }
+  .cat-row:hover { background: var(--cyan-dim); }
+
+  .cat-row-left {}
+  .cat-row-name { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+  .cat-row-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cat-edit-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    text-decoration: none;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .cat-edit-link:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: var(--cyan-dim);
+  }
+
+  .empty-cats {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    text-align: center;
+    padding: 24px 0;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Manage Allowance</div>
+    <div class="page-subtitle">// {{ child.child_user.username|upper }} · BUDGET ALLOCATION</div>
+  </div>
 </div>
 
+<div class="manage-grid">
 
-<div class="bg-white border rounded-2xl p-6">
+  <!-- Add Allowance -->
+  <div class="manage-card">
+    <div class="section-title" style="margin-bottom:18px;">
+      <div class="section-icon">+</div>
+      Add Allowance
+    </div>
 
-<h3 class="font-semibold mb-4">Current Allowances</h3>
+    <form method="POST" class="space-y-2">
+      {% csrf_token %}
+      <input type="text" name="category" placeholder="Category (e.g. Lunch, Books)">
+      <input type="number" name="amount" placeholder="Amount (₹)" min="0">
+      <button class="submit-btn" style="margin-top:4px;"><span>Add Allowance →</span></button>
+    </form>
+  </div>
 
-<p class="text-sm text-slate-500 mb-4">
-Total Allocated: ₹{{ total_allocated|floatformat:2 }}   
-</p>
+  <!-- Current Allowances -->
+  <div class="manage-card">
+    <div class="section-title" style="margin-bottom:14px;">
+      <div class="section-icon">▦</div>
+      Current Allocations
+    </div>
 
-<div class="space-y-4">
+    <div class="total-bar">
+      <span class="total-bar-label">Total Allocated</span>
+      <span class="total-bar-val">₹{{ total_allocated|floatformat:2 }}</span>
+    </div>
 
-{% for category in categories %}
-
-<div class="flex justify-between items-center border-b pb-2">
-
-<div>
-<p class="font-medium">{{ category.name }}</p>
-<p class="text-sm text-slate-500">₹{{ category.allocated_amount }}</p>
-</div>
-
-<a href="{% url 'edit_allowance' category.id %}"
-class="text-cyan-600 text-sm">
-Edit
-</a>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
+    {% if categories %}
+    <div>
+      {% for category in categories %}
+      <div class="cat-row">
+        <div class="cat-row-left">
+          <div class="cat-row-name">{{ category.name }}</div>
+          <div class="cat-row-amount">₹{{ category.allocated_amount }}</div>
+        </div>
+        <a href="{% url 'edit_allowance' category.id %}" class="cat-edit-link">Edit</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-cats">// No allowances yet</div>
+    {% endif %}
+  </div>
 
 </div>
 

@@ -1,38 +1,200 @@
 {% extends "accounts/dashboard.html" %}
 {% block content %}
 
-<div class="max-w-xl">
+<style>
+  .form-page-wrap {
+    max-width: 560px;
+  }
 
-  <h2 class="text-2xl font-semibold mb-6">Add Child Account</h2>
+  .form-shell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+  }
 
-  <form method="POST" class="bg-white border rounded-2xl p-8 space-y-6">
-    {% csrf_token %}
+  .form-shell::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
 
-    <div>
-      <label class="text-sm text-slate-600">Child Username</label>
-      <input type="text" name="username" required
-        class="w-full mt-2 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-200 focus:border-cyan-500">
+  .form-shell::after {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(6,182,212,0.05), transparent 70%);
+    bottom: -150px; right: -80px;
+    pointer-events: none;
+  }
+
+  .field-group { margin-bottom: 18px; }
+
+  .field-group label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+
+  .field-group input {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-3);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .field-group input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+    background: var(--bg-2);
+  }
+
+  .field-group input::placeholder { color: var(--ink-3); }
+
+  .hint-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  .btn-create {
+    padding: 10px 24px;
+    background: transparent;
+    color: var(--cyan);
+    border: 1px solid var(--cyan);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .btn-create::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--cyan);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .btn-create:hover::before { transform: translateX(0); }
+  .btn-create:hover { color: #000; }
+  .btn-create span { position: relative; z-index: 1; }
+
+  .btn-back {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+
+  .btn-back:hover { color: var(--cyan); }
+
+  /* Info box */
+  .info-box {
+    background: var(--cyan-dim);
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .info-box-icon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .info-box-text {
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.6;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.03em;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Add Child Account</div>
+    <div class="page-subtitle">// CREATE A NEW CHILD PROFILE</div>
+  </div>
+</div>
+
+<div class="form-page-wrap">
+  <div class="form-shell">
+
+    <div class="info-box">
+      <span class="info-box-icon">ℹ</span>
+      <span class="info-box-text">A child account will have access to their allowance dashboard and can request funds. You control all allocations.</span>
     </div>
 
-    <div>
-      <label class="text-sm text-slate-600">Password</label>
-      <input type="password" name="password" required
-        class="w-full mt-2 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-200 focus:border-cyan-500">
-    </div>
+    <form method="POST">
+      {% csrf_token %}
 
-    <div>
-      <label class="text-sm text-slate-600">Age</label>
-      <input type="number" name="age"
-        class="w-full mt-2 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-200 focus:border-cyan-500">
-    </div>
+      <div class="field-group">
+        <label>Child Username</label>
+        <input type="text" name="username" required placeholder="e.g. aryan_2025">
+        <div class="hint-text">// Used to log in · Must be unique</div>
+      </div>
 
-    <button type="submit"
-      class="bg-cyan-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-cyan-600 transition">
-      Create Child Account
-    </button>
+      <div class="field-group">
+        <label>Password</label>
+        <input type="password" name="password" required placeholder="••••••••">
+        <div class="hint-text">// You can reset this later from Manage Children</div>
+      </div>
 
-  </form>
+      <div class="field-group">
+        <label>Age</label>
+        <input type="number" name="age" placeholder="e.g. 12" min="1" max="25">
+      </div>
 
+      <div class="form-actions">
+        <button type="submit" class="btn-create"><span>Create Account →</span></button>
+        <a href="{% url 'children_list' %}" class="btn-back">← Cancel</a>
+      </div>
+    </form>
+
+  </div>
 </div>
 
 {% endblock %}

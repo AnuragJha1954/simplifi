@@ -1,68 +1,238 @@
 {% extends "accounts/dashboard.html" %}
 {% block content %}
 
-<h2 class="text-2xl font-semibold mb-8">
-Allowance History Timeline
-</h2>
+<style>
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+  }
 
-<div class="space-y-6">
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--cyan), transparent);
+    opacity: 0.3;
+  }
 
-{% for item in history %}
+  .timeline-item {
+    position: relative;
+    margin-bottom: 14px;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  }
 
-<div class="bg-white border rounded-xl p-5 flex justify-between items-center">
+  .timeline-item:nth-child(1) { animation-delay: 0.05s; }
+  .timeline-item:nth-child(2) { animation-delay: 0.1s; }
+  .timeline-item:nth-child(3) { animation-delay: 0.15s; }
+  .timeline-item:nth-child(4) { animation-delay: 0.2s; }
+  .timeline-item:nth-child(5) { animation-delay: 0.25s; }
+  .timeline-item:nth-child(6) { animation-delay: 0.3s; }
 
-<div>
+  .timeline-dot {
+    position: absolute;
+    left: -24px;
+    top: 18px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--border-2);
+    background: var(--bg-2);
+    flex-shrink: 0;
+  }
 
-<p class="font-medium">
+  .timeline-dot.added    { background: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow); border-color: var(--cyan); }
+  .timeline-dot.approved { background: var(--green); box-shadow: 0 0 8px rgba(16,185,129,0.5); border-color: var(--green); }
+  .timeline-dot.rejected { background: var(--red); box-shadow: 0 0 8px rgba(239,68,68,0.5); border-color: var(--red); }
 
-{% if item.action == "added" %}
-💰 Allowance Added
-{% elif item.action == "request_approved" %}
-✅ Request Approved
-{% elif item.action == "request_rejected" %}
-❌ Request Rejected
+  .timeline-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .timeline-card:hover {
+    border-color: var(--border-2);
+    transform: translateX(4px);
+  }
+
+  .tc-left {}
+
+  .tc-action {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .action-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ab-added    { background: var(--cyan-dim); color: var(--cyan); border: 1px solid var(--border-2); }
+  .ab-approved { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+  .ab-rejected { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+  .tc-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .tc-meta-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+  }
+
+  .tc-meta-item span { color: var(--ink-2); }
+
+  .tc-note {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-top: 6px;
+    font-style: italic;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .tc-right { text-align: right; flex-shrink: 0; }
+
+  .tc-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 4px;
+  }
+
+  .tc-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .filter-chip:hover,
+  .filter-chip.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: var(--cyan-dim);
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Allowance History</div>
+    <div class="page-subtitle">// TIMELINE · ALL TRANSACTIONS &amp; APPROVALS</div>
+  </div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-3);">
+    {{ history|length }} RECORDS
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-chip active">All</div>
+  <div class="filter-chip">Added</div>
+  <div class="filter-chip">Approved</div>
+  <div class="filter-chip">Rejected</div>
+</div>
+
+{% if history %}
+<div class="timeline">
+  {% for item in history %}
+  <div class="timeline-item">
+    <div class="timeline-dot
+      {% if item.action == 'added' %}added
+      {% elif item.action == 'request_approved' %}approved
+      {% elif item.action == 'request_rejected' %}rejected
+      {% endif %}">
+    </div>
+
+    <div class="timeline-card">
+      <div class="tc-left">
+        <div class="tc-action">
+          {% if item.action == "added" %}
+            <span class="action-badge ab-added">Added</span>
+            Allowance Credited
+          {% elif item.action == "request_approved" %}
+            <span class="action-badge ab-approved">Approved</span>
+            Request Approved
+          {% elif item.action == "request_rejected" %}
+            <span class="action-badge ab-rejected">Rejected</span>
+            Request Rejected
+          {% endif %}
+        </div>
+
+        <div class="tc-meta">
+          <div class="tc-meta-item">CHILD: <span>{{ item.child.child_user.username }}</span></div>
+          <div class="tc-meta-item">CATEGORY: <span>{{ item.category.name }}</span></div>
+        </div>
+
+        {% if item.note %}
+        <div class="tc-note">// {{ item.note }}</div>
+        {% endif %}
+      </div>
+
+      <div class="tc-right">
+        <div class="tc-amount">₹{{ item.amount }}</div>
+        <div class="tc-time">{{ item.created_at|date:"d M Y · H:i" }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">// No allowance history yet</div>
 {% endif %}
-
-</p>
-
-<p class="text-sm text-slate-500">
-Child: {{ item.child.child_user.username }}
-</p>
-
-<p class="text-sm text-slate-500">
-Category: {{ item.category.name }}
-</p>
-
-{% if item.note %}
-<p class="text-sm text-slate-400">
-Note: {{ item.note }}
-</p>
-{% endif %}
-
-</div>
-
-<div class="text-right">
-
-<p class="text-lg font-semibold text-cyan-600">
-₹{{ item.amount }}
-</p>
-
-<p class="text-xs text-slate-400">
-{{ item.created_at|date:"M d, Y H:i" }}
-</p>
-
-</div>
-
-</div>
-
-{% empty %}
-
-<p class="text-slate-500">
-No allowance history yet.
-</p>
-
-{% endfor %}
-
-</div>
 
 {% endblock %}

@@ -1,52 +1,159 @@
 {% extends "accounts/dashboard.html" %}
 {% block content %}
 
-<h2 class="text-2xl font-semibold mb-6">
-Request Extra Money 💸
-</h2>
+<style>
+  .request-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 900px;
+  }
 
-<div class="grid md:grid-cols-2 gap-8">
+  .request-form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 30px;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+  }
 
-<div class="bg-white border rounded-xl p-6">
+  .request-form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
 
-<form method="POST" class="space-y-4">
+  .request-form-card select,
+  .request-form-card input,
+  .request-form-card textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-3);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 10px;
+  }
 
-{% csrf_token %}
+  .request-form-card select:focus,
+  .request-form-card input:focus,
+  .request-form-card textarea:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+    background: var(--bg-2);
+  }
 
-<select name="category"
-class="w-full border rounded-xl px-4 py-3">
+  .request-form-card select option { background: var(--bg-3); color: var(--ink); }
+  .request-form-card input::placeholder,
+  .request-form-card textarea::placeholder { color: var(--ink-3); }
+  .request-form-card textarea { resize: vertical; min-height: 90px; }
 
-{% for cat in categories %}
-<option value="{{ cat.id }}">
-{{ cat.name }}
-</option>
-{% endfor %}
+  /* Tips card */
+  .tips-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 30px;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) 0.12s both;
+    position: relative;
+    overflow: hidden;
+    height: fit-content;
+  }
 
-</select>
+  .tips-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  }
 
-<input
-type="number"
-name="amount"
-placeholder="Amount"
-class="w-full border rounded-xl px-4 py-3"
-required>
+  .tip-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.6;
+  }
 
-<textarea
-name="reason"
-placeholder="Why do you need this?"
-class="w-full border rounded-xl px-4 py-3"
-required></textarea>
+  .tip-item:last-child { border: none; }
 
-<button
-class="bg-cyan-500 text-white px-5 py-3 rounded-xl">
+  .tip-prefix {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--cyan);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+</style>
 
-Send Request
-
-</button>
-
-</form>
-
+<div class="page-header">
+  <div>
+    <div class="page-title">Request Funds</div>
+    <div class="page-subtitle">// SUBMIT A FUND REQUEST TO PARENT</div>
+  </div>
 </div>
+
+<div class="request-wrap">
+
+  <!-- Form -->
+  <div class="request-form-card">
+    <div class="section-title" style="margin-bottom:18px;">
+      <div class="section-icon">◎</div>
+      New Request
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <select name="category">
+        {% for cat in categories %}
+        <option value="{{ cat.id }}">{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+
+      <input type="number" name="amount" placeholder="Amount needed (₹)" required>
+
+      <textarea name="reason" placeholder="Describe why you need this money..." required></textarea>
+
+      <button class="submit-btn" style="margin-top:4px;"><span>Send Request →</span></button>
+    </form>
+  </div>
+
+  <!-- Tips -->
+  <div class="tips-card">
+    <div class="section-title" style="margin-bottom:16px;">
+      <div class="section-icon">ℹ</div>
+      Tips
+    </div>
+
+    <div class="tip-item">
+      <span class="tip-prefix">//</span>
+      <span>Be specific about the amount — request only what you need.</span>
+    </div>
+    <div class="tip-item">
+      <span class="tip-prefix">//</span>
+      <span>Explain clearly why you need the money — parents approve faster with good reasons.</span>
+    </div>
+    <div class="tip-item">
+      <span class="tip-prefix">//</span>
+      <span>Select the right category for your request — it helps parents track spending.</span>
+    </div>
+    <div class="tip-item">
+      <span class="tip-prefix">//</span>
+      <span>You'll see the status update on your dashboard once reviewed.</span>
+    </div>
+  </div>
 
 </div>
 

@@ -2,212 +2,99 @@
 {% block content %}
 
 <style>
-  /* ── Page-level overrides ── */
-  .page-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 30px;
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 8px;
-  }
-
-  .page-subtitle {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 48px;
-  }
-
-  /* ── Summary Strip ── */
-  .summary-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 52px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 24px 22px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: pageEnter 0.5s cubic-bezier(0.16,1,0.3,1) both;
-  }
-
-  .stat-card:nth-child(1) { animation-delay: 0.05s; }
-  .stat-card:nth-child(2) { animation-delay: 0.12s; }
-  .stat-card:nth-child(3) { animation-delay: 0.19s; }
-  .stat-card:nth-child(4) { animation-delay: 0.26s; }
-
-  .stat-card::after {
-    content: '';
-    position: absolute;
-    right: -20px; bottom: -20px;
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ecfeff, #cffafe);
-    opacity: 0;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    transform: scale(0.8);
-  }
-
-  .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.06);
-  }
-
-  .stat-card:hover::after {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  .stat-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-
-  .stat-value {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--ink);
-  }
-
-  .stat-accent {
-    position: absolute;
-    top: 0; right: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--cyan), #22d3ee);
-    border-radius: 0 18px 18px 0;
-  }
-
-  /* ── Forms Grid ── */
-  .forms-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 52px;
-  }
-
+  /* Form card */
   .form-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px 30px;
-    transition: box-shadow 0.3s ease;
-    animation: pageEnter 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    border-radius: 14px;
+    padding: 22px 24px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    position: relative;
+    overflow: hidden;
   }
 
-  .form-card:nth-child(1) { animation-delay: 0.1s; }
-  .form-card:nth-child(2) { animation-delay: 0.17s; }
-  .form-card:nth-child(3) { animation-delay: 0.24s; }
-  .form-card:nth-child(4) { animation-delay: 0.31s; }
-
-  .form-card:hover {
-    box-shadow: 0 12px 40px rgba(0,0,0,0.05);
+  .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
   }
+
+  .form-card:hover::before { opacity: 1; }
+  .form-card:hover { border-color: var(--border-2); box-shadow: 0 8px 32px rgba(6,182,212,0.06); }
+
+  .form-card:nth-child(1) { animation-delay: 0.05s; }
+  .form-card:nth-child(2) { animation-delay: 0.12s; }
+  .form-card:nth-child(3) { animation-delay: 0.19s; }
+  .form-card:nth-child(4) { animation-delay: 0.26s; }
 
   .form-card-title {
     font-family: 'Syne', sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--ink);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
-  .form-card-title .icon-badge {
-    width: 30px; height: 30px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #ecfeff, #cffafe);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-  }
-
-  /* Form elements */
-  .form-card input,
+  /* Inline form element styling for Django-rendered fields */
+  .form-card input[type="text"],
+  .form-card input[type="number"],
+  .form-card input[type="email"],
+  .form-card input[type="date"],
   .form-card select,
   .form-card textarea {
     width: 100%;
-    padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
     color: var(--ink);
-    background: var(--ground);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    margin-bottom: 10px;
+    background: var(--bg-3);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 8px;
     outline: none;
   }
 
   .form-card input:focus,
   .form-card select:focus {
     border-color: var(--cyan);
-    box-shadow: 0 0 0 3px rgba(6,182,212,0.12);
-    background: white;
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+    background: var(--bg-2);
   }
 
   .form-card label {
     display: block;
-    font-size: 12px;
-    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    margin-bottom: 5px;
-    margin-top: 4px;
-  }
-
-  /* Submit button */
-  .submit-btn {
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    margin-bottom: 4px;
     margin-top: 6px;
-    padding: 11px 22px;
-    background: var(--ink);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
   }
 
-  .submit-btn:hover {
-    background: #1e293b;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(15,23,42,0.2);
-  }
+  .form-card select option { background: var(--bg-3); color: var(--ink); }
 
-  .submit-btn:active {
-    transform: translateY(0);
-  }
-
-  /* Toggle switch */
+  /* Toggle */
   .toggle-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 14px 0 4px;
+    gap: 10px;
+    margin: 10px 0 4px;
   }
 
   .toggle-wrap {
     position: relative;
-    width: 42px;
-    height: 22px;
+    width: 38px; height: 20px;
     flex-shrink: 0;
   }
 
@@ -216,218 +103,141 @@
   .toggle-track {
     position: absolute;
     inset: 0;
-    background: #cbd5e1;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
     border-radius: 999px;
     cursor: pointer;
-    transition: background 0.25s ease;
+    transition: background 0.25s, border-color 0.25s;
   }
 
   .toggle-track::before {
     content: '';
     position: absolute;
-    width: 16px; height: 16px;
-    left: 3px; top: 3px;
-    background: white;
+    width: 14px; height: 14px;
+    left: 2px; top: 2px;
+    background: var(--ink-3);
     border-radius: 50%;
-    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), background 0.25s;
   }
 
   .toggle-wrap input:checked + .toggle-track {
-    background: var(--cyan);
+    background: var(--cyan-dim);
+    border-color: var(--cyan);
   }
 
   .toggle-wrap input:checked + .toggle-track::before {
-    transform: translateX(20px);
+    transform: translateX(18px);
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
   }
 
   .toggle-label {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.4;
+    font-size: 12px;
+    color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
   }
 
-  /* ── Data Tables ── */
-  .table-section {
-    margin-bottom: 44px;
-    animation: pageEnter 0.5s cubic-bezier(0.16,1,0.3,1) both;
-  }
-
-  .table-section:nth-of-type(1) { animation-delay: 0.1s; }
-  .table-section:nth-of-type(2) { animation-delay: 0.18s; }
-  .table-section:nth-of-type(3) { animation-delay: 0.26s; }
-  .table-section:nth-of-type(4) { animation-delay: 0.34s; }
-
-  .table-header {
+  /* Pagination */
+  .pagination {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 16px;
   }
 
-  .table-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--ink);
-  }
-
-  .table-count {
-    font-size: 12px;
-    color: var(--muted);
-    background: var(--ground);
-    border: 1px solid var(--border);
-    padding: 3px 10px;
-    border-radius: 999px;
-  }
-
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    overflow: hidden;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  thead {
-    background: var(--ground);
-  }
-
-  th {
-    padding: 12px 20px;
+  .page-btn {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    text-align: left;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--ink-3);
+    text-decoration: none;
+    transition: all 0.2s;
   }
 
-  td {
-    padding: 15px 20px;
-    font-size: 14px;
-    color: var(--ink);
-    vertical-align: middle;
-  }
-
-  tbody tr {
-    border-top: 1px solid #f1f5f9;
-    transition: background 0.15s ease;
-  }
-
-  tbody tr:hover {
-    background: #fafcff;
-  }
-
-  .empty-row td {
-    text-align: center;
-    color: var(--muted);
-    padding: 36px;
-    font-size: 14px;
-  }
-
-  .badge-yes {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: #ecfdf5;
-    color: #059669;
-    border-radius: 999px;
-    padding: 3px 10px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .badge-no {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--ground);
-    color: var(--muted);
-    border-radius: 999px;
-    padding: 3px 10px;
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .mono {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
+  .page-btn:hover, .page-btn.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: var(--cyan-dim);
   }
 </style>
 
-<p class="page-title">Financial Transactions</p>
-<p class="page-subtitle">Manage your cards, EMIs, subscriptions and spending patterns.</p>
+<div class="page-header">
+  <div>
+    <div class="page-title">Transactions</div>
+    <div class="page-subtitle">// CARDS · EMI · SUBSCRIPTIONS · SPENDING</div>
+  </div>
+</div>
 
 <!-- SUMMARY STRIP -->
-<div class="summary-strip">
-  <div class="stat-card">
-    <div class="stat-accent"></div>
-    <p class="stat-label">Credit Limit</p>
-    <p class="stat-value mono">₹{{ total_credit_limit }}</p>
+<div class="summary-strip" style="margin-bottom:20px;">
+  <div class="stat-card delay-1">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Credit Limit</div>
+    <div class="stat-value mono">₹{{ total_credit_limit }}</div>
   </div>
-  <div class="stat-card">
-    <div class="stat-accent"></div>
-    <p class="stat-label">Total EMI</p>
-    <p class="stat-value mono">₹{{ total_emi }}</p>
+  <div class="stat-card delay-2">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Total EMI</div>
+    <div class="stat-value mono">₹{{ total_emi }}</div>
   </div>
-  <div class="stat-card">
-    <div class="stat-accent"></div>
-    <p class="stat-label">Subscriptions</p>
-    <p class="stat-value mono">₹{{ total_subscription }}</p>
+  <div class="stat-card delay-3">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Subscriptions</div>
+    <div class="stat-value mono">₹{{ total_subscription }}</div>
   </div>
-  <div class="stat-card">
-    <div class="stat-accent"></div>
-    <p class="stat-label">Active Cards</p>
-    <p class="stat-value">{{ page_obj.paginator.count }}</p>
+  <div class="stat-card delay-4">
+    <div class="stat-corner"></div>
+    <div class="stat-label">Active Cards</div>
+    <div class="stat-value">{{ page_obj.paginator.count }}</div>
   </div>
 </div>
 
 <!-- FORMS GRID -->
-<div class="forms-grid">
+<div class="forms-grid" style="margin-bottom:28px;">
 
   <!-- Credit Card -->
   <div class="form-card">
-    <h3 class="form-card-title">
-      <span class="icon-badge">💳</span>
+    <div class="form-card-title">
+      <div class="section-icon">⊞</div>
       Add Credit Card
-    </h3>
-    <form method="POST" class="ajax-form">
+    </div>
+    <form method="POST">
       {% csrf_token %}
       {{ card_form.bank_name }}
       {{ card_form.total_limit }}
       {{ card_form.available_limit }}
       {{ card_form.interest_rate }}
       <input type="hidden" name="form_type" value="card">
-      <button class="submit-btn">+ Add Card</button>
+      <button class="submit-btn"><span>+ Add Card</span></button>
     </form>
   </div>
 
   <!-- EMI -->
   <div class="form-card">
-    <h3 class="form-card-title">
-      <span class="icon-badge">📅</span>
+    <div class="form-card-title">
+      <div class="section-icon">◎</div>
       Add EMI
-    </h3>
-    <form method="POST" class="ajax-form">
+    </div>
+    <form method="POST">
       {% csrf_token %}
       {{ emi_form }}
       <input type="hidden" name="form_type" value="emi">
-      <button class="submit-btn">+ Add EMI</button>
+      <button class="submit-btn"><span>+ Add EMI</span></button>
     </form>
   </div>
 
   <!-- Subscription -->
   <div class="form-card">
-    <h3 class="form-card-title">
-      <span class="icon-badge">🔄</span>
+    <div class="form-card-title">
+      <div class="section-icon">◈</div>
       Add Subscription
-    </h3>
-    <form method="POST" class="ajax-form">
+    </div>
+    <form method="POST">
       {% csrf_token %}
       {{ sub_form.name }}
       {{ sub_form.monthly_cost }}
@@ -436,24 +246,24 @@
           {{ sub_form.is_essential }}
           <span class="toggle-track"></span>
         </label>
-        <span class="toggle-label">Mark as Essential (cannot be reduced)</span>
+        <span class="toggle-label">MARK AS ESSENTIAL</span>
       </div>
       <input type="hidden" name="form_type" value="sub">
-      <button class="submit-btn">+ Add Subscription</button>
+      <button class="submit-btn"><span>+ Add Subscription</span></button>
     </form>
   </div>
 
   <!-- Spending -->
   <div class="form-card">
-    <h3 class="form-card-title">
-      <span class="icon-badge">📊</span>
+    <div class="form-card-title">
+      <div class="section-icon">▦</div>
       Add Monthly Spending
-    </h3>
-    <form method="POST" class="ajax-form">
+    </div>
+    <form method="POST">
       {% csrf_token %}
       {{ spend_form }}
       <input type="hidden" name="form_type" value="spend">
-      <button class="submit-btn">+ Add Spending</button>
+      <button class="submit-btn"><span>+ Add Spending</span></button>
     </form>
   </div>
 
@@ -462,8 +272,8 @@
 <!-- CREDIT CARDS TABLE -->
 <div class="table-section">
   <div class="table-header">
-    <h3 class="table-title">Credit Cards</h3>
-    <span class="table-count">{{ page_obj.paginator.count }} card{% if page_obj.paginator.count != 1 %}s{% endif %}</span>
+    <div class="table-title">Credit Cards</div>
+    <span class="table-count">{{ page_obj.paginator.count }} CARD{% if page_obj.paginator.count != 1 %}S{% endif %}</span>
   </div>
   <div class="table-wrap">
     <table>
@@ -478,23 +288,37 @@
       <tbody>
         {% for card in page_obj %}
         <tr>
-          <td><strong>{{ card.bank_name }}</strong></td>
+          <td style="color:var(--ink);font-weight:600;">{{ card.bank_name }}</td>
           <td class="mono">₹{{ card.total_limit }}</td>
           <td class="mono">₹{{ card.available_limit }}</td>
-          <td>{{ card.interest_rate }}%</td>
+          <td><span class="badge badge-cyan">{{ card.interest_rate }}%</span></td>
         </tr>
         {% empty %}
-        <tr class="empty-row"><td colspan="4">No cards added yet</td></tr>
+        <tr class="empty-row"><td colspan="4">// No cards added yet</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  {% if page_obj.has_other_pages %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">← Prev</a>
+    {% endif %}
+    {% for i in page_obj.paginator.page_range %}
+      <a href="?page={{ i }}" class="page-btn {% if i == page_obj.number %}active{% endif %}">{{ i }}</a>
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="page-btn">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 
 <!-- EMI TABLE -->
 <div class="table-section">
   <div class="table-header">
-    <h3 class="table-title">EMIs</h3>
+    <div class="table-title">EMIs</div>
+    <span class="table-count">{{ emis|length }} ACTIVE</span>
   </div>
   <div class="table-wrap">
     <table>
@@ -503,19 +327,19 @@
           <th>Name</th>
           <th>Principal</th>
           <th>Monthly Payment</th>
-          <th>Remaining Months</th>
+          <th>Remaining</th>
         </tr>
       </thead>
       <tbody>
         {% for emi in emis %}
         <tr>
-          <td><strong>{{ emi.name }}</strong></td>
+          <td style="color:var(--ink);font-weight:600;">{{ emi.name }}</td>
           <td class="mono">₹{{ emi.principal_amount }}</td>
           <td class="mono">₹{{ emi.monthly_payment }}</td>
-          <td>{{ emi.remaining_months }}mo</td>
+          <td><span class="badge badge-cyan">{{ emi.remaining_months }}mo</span></td>
         </tr>
         {% empty %}
-        <tr class="empty-row"><td colspan="4">No EMIs added yet</td></tr>
+        <tr class="empty-row"><td colspan="4">// No EMIs added yet</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -525,7 +349,8 @@
 <!-- SUBSCRIPTIONS TABLE -->
 <div class="table-section">
   <div class="table-header">
-    <h3 class="table-title">Subscriptions</h3>
+    <div class="table-title">Subscriptions</div>
+    <span class="table-count">{{ subs|length }} ACTIVE</span>
   </div>
   <div class="table-wrap">
     <table>
@@ -539,18 +364,18 @@
       <tbody>
         {% for sub in subs %}
         <tr>
-          <td><strong>{{ sub.name }}</strong></td>
+          <td style="color:var(--ink);font-weight:600;">{{ sub.name }}</td>
           <td class="mono">₹{{ sub.monthly_cost }}</td>
           <td>
             {% if sub.is_essential %}
-              <span class="badge-yes">✓ Yes</span>
+              <span class="badge badge-yes">✓ Essential</span>
             {% else %}
-              <span class="badge-no">No</span>
+              <span class="badge badge-no">Optional</span>
             {% endif %}
           </td>
         </tr>
         {% empty %}
-        <tr class="empty-row"><td colspan="3">No subscriptions added yet</td></tr>
+        <tr class="empty-row"><td colspan="3">// No subscriptions added yet</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -560,24 +385,25 @@
 <!-- SPENDING TABLE -->
 <div class="table-section">
   <div class="table-header">
-    <h3 class="table-title">Monthly Spending</h3>
+    <div class="table-title">Monthly Spending</div>
+    <span class="table-count">{{ spendings|length }} CATEGORIES</span>
   </div>
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
           <th>Category</th>
-          <th>Avg Monthly Amount</th>
+          <th>Avg Monthly</th>
         </tr>
       </thead>
       <tbody>
         {% for spend in spendings %}
         <tr>
-          <td><strong>{{ spend.category }}</strong></td>
+          <td style="color:var(--ink);font-weight:600;">{{ spend.category }}</td>
           <td class="mono">₹{{ spend.average_monthly_amount }}</td>
         </tr>
         {% empty %}
-        <tr class="empty-row"><td colspan="2">No spending data added yet</td></tr>
+        <tr class="empty-row"><td colspan="2">// No spending data yet</td></tr>
         {% endfor %}
       </tbody>
     </table>

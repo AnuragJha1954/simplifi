@@ -1,104 +1,381 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" x-data="{ tab: 'login' }">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simplifi — Login</title>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
-    body {
-      background:
-        radial-gradient(circle at 15% 10%, #e6fffa, transparent 40%),
-        radial-gradient(circle at 85% 20%, #ecfeff, transparent 35%),
-        #f8fafc;
-      color: #0f172a;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0a0a0a;
+      --ink-soft: #3a3a3a;
+      --ink-muted: #888;
+      --paper: #fafaf8;
+      --teal: #0d9488;
+      --teal-light: #ccfbf1;
+      --teal-dark: #0f766e;
+      --rule: #e5e5e2;
+      --white: #ffffff;
     }
 
-    .auth-card {
-      backdrop-filter: blur(20px);
-      background: rgba(255,255,255,0.7);
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(13,148,136,0.25), transparent 70%);
+      bottom: -150px;
+      left: -100px;
+      pointer-events: none;
+    }
+
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(13,148,136,0.12), transparent 70%);
+      top: -80px;
+      right: -80px;
+      pointer-events: none;
+    }
+
+    .panel-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-logo span { color: var(--teal); }
+
+    .panel-body {
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .panel-eyebrow::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: var(--teal);
+    }
+
+    .panel-heading {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.2rem, 3.5vw, 3.2rem);
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-heading em { font-style: italic; color: rgba(255,255,255,0.45); }
+
+    .panel-desc {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.75;
+      font-weight: 300;
+      max-width: 320px;
+    }
+
+    /* Feature list */
+    .panel-features {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .feat-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+      flex-shrink: 0;
+    }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      background: var(--paper);
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-heading {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.4rem;
+    }
+
+    .auth-sub {
+      font-size: 0.875rem;
+      color: var(--ink-muted);
+      margin-bottom: 2.5rem;
+      font-weight: 300;
+    }
+
+    /* Tab toggle */
+    .tab-row {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.75rem 0;
+      font-size: 0.875rem;
+      font-weight: 500;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--ink-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .tab-btn.active {
+      color: var(--ink);
+      border-bottom-color: var(--ink);
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--teal);
+    }
+
+    input::placeholder { color: #bbb; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--ink);
+      color: var(--white);
+      border: none;
+      border-radius: 100px;
+      padding: 0.9rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: background 0.25s;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-submit:hover { background: var(--teal); }
+
+    .form-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+    }
+
+    .form-footer a { color: var(--teal); text-decoration: none; }
+
+    .hidden-form { display: none; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { padding: 2rem 1.5rem; }
     }
   </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center px-6">
+<body>
 
-  <div class="w-full max-w-md">
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="panel-logo">simplifi<span>.</span></div>
 
-    <!-- Logo -->
-    <div class="text-center mb-8">
-      <img src="{% static 'images/logo.png' %}" class="h-12 mx-auto mb-4">
-      <h2 class="text-3xl font-semibold">Welcome to Simplifi</h2>
-      <p class="text-slate-500 text-sm mt-2">Your Personal CFO</p>
+    <div class="panel-body">
+      <div class="panel-eyebrow">Personal CFO</div>
+      <h1 class="panel-heading">
+        Your money,<br>
+        <em>finally</em><br>
+        under control.
+      </h1>
+      <p class="panel-desc">
+        Track bills, manage budgets, and make confident decisions — without spreadsheets or stress.
+      </p>
     </div>
 
-    <!-- Card -->
-    <div class="auth-card border border-slate-200 rounded-3xl p-8 shadow-xl">
+    <div class="panel-features">
+      <div class="panel-feature"><div class="feat-dot"></div> No bank login required</div>
+      <div class="panel-feature"><div class="feat-dot"></div> India-first EMI & bill tracking</div>
+      <div class="panel-feature"><div class="feat-dot"></div> Starts free, always</div>
+    </div>
+  </div>
 
-      <!-- Toggle -->
-      <div class="flex mb-8 bg-slate-100 rounded-xl p-1">
-        <button
-          @click="tab='login'"
-          :class="tab==='login' ? 'bg-white shadow text-black' : 'text-slate-500'"
-          class="flex-1 py-2 rounded-lg transition font-medium">
-          Login
-        </button>
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="auth-box">
 
-        <button
-          @click="tab='signup'"
-          :class="tab==='signup' ? 'bg-white shadow text-black' : 'text-slate-500'"
-          class="flex-1 py-2 rounded-lg transition font-medium">
-          Sign Up
-        </button>
+      <h2 class="auth-heading">Welcome back</h2>
+      <p class="auth-sub">Sign in to your account or create a new one.</p>
+
+      <!-- Tab row -->
+      <div class="tab-row">
+        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
       </div>
 
       <!-- LOGIN FORM -->
-      <form method="POST" x-show="tab==='login'">
+      <form method="POST" id="form-login">
         {% csrf_token %}
         <input type="hidden" name="form_type" value="login">
 
-        <div class="space-y-4">
-          <input type="email" name="email" placeholder="Email"
-            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
-
-          <input type="password" name="password" placeholder="Password"
-            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••">
         </div>
 
-        <button type="submit"
-          class="mt-6 w-full bg-gradient-to-r from-teal-600 to-cyan-500 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
-          Login
-        </button>
+        <button type="submit" class="btn-submit">Login →</button>
+
+        <p class="form-footer">
+          Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Sign up</a>
+        </p>
       </form>
 
       <!-- SIGNUP FORM -->
-      <form method="POST" x-show="tab==='signup'">
+      <form method="POST" id="form-signup" class="hidden-form">
         {% csrf_token %}
         <input type="hidden" name="form_type" value="signup">
 
-        <div class="space-y-4">
-          <input type="text" name="username" placeholder="Username"
-            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
-
-          <input type="email" name="email" placeholder="Email"
-            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
-
-          <input type="password" name="password" placeholder="Password"
-            class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-400 outline-none">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="yourname">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••">
         </div>
 
-        <button type="submit"
-          class="mt-6 w-full bg-gradient-to-r from-teal-600 to-cyan-500 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
-          Create Account
-        </button>
+        <button type="submit" class="btn-submit">Create Account →</button>
+
+        <p class="form-footer">
+          Already have an account? <a href="#" onclick="switchTab('login'); return false;">Login</a>
+        </p>
       </form>
 
     </div>
-
   </div>
+
+  <script>
+    function switchTab(tab) {
+      document.getElementById('form-login').classList.toggle('hidden-form', tab !== 'login');
+      document.getElementById('form-signup').classList.toggle('hidden-form', tab !== 'signup');
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+
+      const h = document.querySelector('.auth-heading');
+      h.textContent = tab === 'login' ? 'Welcome back' : 'Get started';
+    }
+  </script>
 
 </body>
 </html>
