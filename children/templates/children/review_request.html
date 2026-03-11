@@ -1,0 +1,61 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<h2 class="text-xl font-semibold mb-6">
+Review Request
+</h2>
+
+<div class="bg-white border rounded-xl p-6 max-w-lg">
+
+<p class="mb-2">
+Child: {{ req.child.child_user.username }}
+</p>
+
+<p class="mb-2">
+Category: {{ req.category.name }}
+</p>
+
+<p class="mb-2">
+Amount: ₹{{ req.amount }}
+</p>
+
+<p class="mb-4">
+Reason: {{ req.reason }}
+</p>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<textarea
+name="note"
+placeholder="Optional note"
+class="w-full border rounded-xl px-4 py-3 mb-4"></textarea>
+
+<div class="flex gap-4">
+
+<button
+name="action"
+value="approve"
+class="bg-green-500 text-white px-4 py-2 rounded">
+
+Approve
+
+</button>
+
+<button
+name="action"
+value="reject"
+class="bg-red-500 text-white px-4 py-2 rounded">
+
+Reject
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+{% endblock %}

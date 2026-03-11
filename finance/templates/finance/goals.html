@@ -4,207 +4,462 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
 
-.goal-card {
-  background: white;
-  border-radius: 24px;
-  padding: 32px;
-  border: 1px solid #f1f5f9;
-  transition: 0.3s ease;
-}
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 48px;
+  }
 
-.goal-card:hover {
-  box-shadow: 0 30px 70px rgba(0,0,0,0.05);
-  transform: translateY(-4px);
-}
+  /* ── Section card ── */
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 30px 32px;
+    transition: box-shadow 0.3s ease;
+    animation: pageEnter 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    margin-bottom: 24px;
+  }
 
-.progress-bar {
-  height: 10px;
-  background: #e2e8f0;
-  border-radius: 999px;
-  overflow: hidden;
-}
+  .section-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.05); }
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(to right, #06b6d4, #22d3ee);
-  transition: width 0.6s ease;
-}
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-.summary-box {
-  background: linear-gradient(to right, #f8fafc, #ffffff);
-  padding: 24px;
-  border-radius: 20px;
-  border: 1px solid #f1f5f9;
-}
+  .section-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ecfeff, #cffafe);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
 
-.risk-high { color: #dc2626; }
-.risk-medium { color: #f59e0b; }
-.risk-low { color: #16a34a; }
+  /* ── Form elements ── */
+  .section-card input,
+  .section-card select,
+  .section-card textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--ground);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 10px;
+    outline: none;
+  }
 
+  .section-card input:focus,
+  .section-card select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.12);
+    background: white;
+  }
+
+  .section-card label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 5px;
+    margin-top: 4px;
+  }
+
+  .submit-btn {
+    margin-top: 8px;
+    padding: 11px 22px;
+    background: var(--ink);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  }
+
+  .submit-btn:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(15,23,42,0.2);
+  }
+
+  /* ── Warning box ── */
+  .warning-box {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* ── Goals grid ── */
+  .goals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .goal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 26px 28px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: pageEnter 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .goal-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.07);
+  }
+
+  /* Goal header */
+  .goal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .goal-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 5px;
+  }
+
+  .goal-type-badge {
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--ground);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  /* Health score badge */
+  .health-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    gap: 3px;
+  }
+
+  .health-score {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-family: 'Syne', sans-serif;
+    white-space: nowrap;
+  }
+
+  .health-score.green  { background: #dcfce7; color: #059669; }
+  .health-score.amber  { background: #fef3c7; color: #d97706; }
+  .health-score.orange { background: #ffedd5; color: #ea580c; }
+  .health-score.red    { background: #fee2e2; color: #dc2626; }
+
+  .health-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* Progress */
+  .progress-block {}
+
+  .progress-track {
+    height: 5px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 7px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--cyan-dark), #22d3ee);
+    border-radius: 999px;
+    transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Projection value */
+  .projection-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #ecfeff, #f0fdff);
+    border: 1px solid #cffafe;
+    border-radius: 12px;
+  }
+
+  .projection-label {
+    font-size: 12px;
+    color: var(--cyan-dark);
+    font-weight: 500;
+  }
+
+  .projection-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cyan-dark);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Monte Carlo box */
+  .monte-box {
+    background: var(--ground);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+
+  .monte-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .monte-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .monte-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .monte-item-label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .monte-item-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-family: 'Syne', sans-serif;
+  }
+
+  /* Success probability gets special treatment */
+  .monte-item.highlight .monte-item-value {
+    color: var(--cyan-dark);
+  }
+
+  /* Divider between grid items */
+  .monte-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Goal footer pills */
+  .goal-footer {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .goal-pill {
+    font-size: 12px;
+    background: var(--ground);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .goal-pill strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* Stagger delays */
+  .goal-card:nth-child(1) { animation-delay: 0.05s; }
+  .goal-card:nth-child(2) { animation-delay: 0.12s; }
+  .goal-card:nth-child(3) { animation-delay: 0.19s; }
+  .goal-card:nth-child(4) { animation-delay: 0.26s; }
+  .goal-card:nth-child(5) { animation-delay: 0.33s; }
+  .goal-card:nth-child(6) { animation-delay: 0.40s; }
+
+  .mono { font-variant-numeric: tabular-nums; }
 </style>
 
-<h2 class="text-3xl font-semibold mb-10">
-  🎯 Goal Planner
-</h2>
 
-<!-- SUMMARY STRIP -->
-<div class="grid md:grid-cols-4 gap-6 mb-16">
+<p class="page-title">Goal Planner</p>
+<p class="page-subtitle">Risk-aware financial planning powered by Monte Carlo simulation.</p>
 
-  <div class="summary-box">
-    <p>Monthly Income</p>
-    <p class="text-xl font-semibold">₹ {{ monthly_income }}</p>
-  </div>
 
-  <div class="summary-box">
-    <p>Monthly Expense</p>
-    <p class="text-xl font-semibold">₹ {{ monthly_expense }}</p>
-  </div>
-
-  <div class="summary-box">
-    <p>Surplus</p>
-    <p class="text-xl font-semibold text-cyan-600">
-      ₹ {{ surplus }}
-    </p>
-  </div>
-
-  <div class="summary-box">
-    <p>Risk Level</p>
-    <p class="text-xl font-semibold
-       {% if risk_level == 'High' %}risk-high{% endif %}
-       {% if risk_level == 'Medium' %}risk-medium{% endif %}
-       {% if risk_level == 'Low' %}risk-low{% endif %}">
-       {{ risk_level }}
-    </p>
-  </div>
-
-</div>
-
-<!-- Emergency Fund Alert -->
-<div class="goal-card mb-12">
-
-  <h3 class="font-semibold text-lg mb-4">
-    🛡 Emergency Fund Rule
-  </h3>
-
-  <p>
-    Recommended emergency fund:
-    <strong>₹ {{ emergency_required }}</strong>
-    (6 months of expenses)
-  </p>
-
-</div>
-
-<!-- Goal Form -->
-<div class="goal-card mb-16">
-
-  <h3 class="font-semibold text-lg mb-6">
-    🎯 Create New Goal
+<!-- CREATE GOAL FORM -->
+<div class="section-card" style="animation-delay:0.05s">
+  <h3 class="section-title">
+    <span class="section-icon">🎯</span>
+    Create New Goal
   </h3>
 
   {% if warning %}
-  <div class="bg-red-100 text-red-600 p-4 rounded-xl mb-6">
-    {{ warning }}
+  <div class="warning-box">
+    <span>⚠</span>
+    <span>{{ warning }}</span>
   </div>
   {% endif %}
 
-  <form method="POST" class="space-y-6">
+  <form method="POST">
     {% csrf_token %}
     {{ form }}
-
-    <button class="bg-cyan-600 text-white px-6 py-3 rounded-xl hover:bg-cyan-700 transition">
-      Create Goal
-    </button>
+    <button class="submit-btn">+ Create Goal</button>
   </form>
-
 </div>
 
-<!-- Goals Grid -->
-<div class="grid md:grid-cols-2 gap-10 mb-20">
 
-{% for goal in goals %}
+<!-- GOALS GRID -->
+{% if goals %}
+<div class="goals-grid">
 
-<div class="goal-card">
+  {% for g in goals %}
+  <div class="goal-card">
 
-  <div class="flex justify-between mb-4">
-    <h4 class="font-semibold text-lg">{{ goal.name }}</h4>
-    <span class="text-sm text-slate-500">
-      {{ goal.get_goal_type_display }}
-    </span>
-  </div>
-
-  <div class="progress-bar mb-4">
-    <div class="progress-fill"
-         style="width: {{ goal.progress_percent }}%">
+    <!-- Header row: name + health score -->
+    <div class="goal-header">
+      <div>
+        <p class="goal-name">{{ g.goal.name }}</p>
+        <span class="goal-type-badge">{{ g.goal.get_goal_type_display }}</span>
+      </div>
+      <div class="health-badge">
+        <span class="health-score
+          {% if g.health >= 80 %}green
+          {% elif g.health >= 60 %}amber
+          {% elif g.health >= 40 %}orange
+          {% else %}red{% endif %}">
+          {{ g.health }}/100
+        </span>
+        <span class="health-label">Health Score</span>
+      </div>
     </div>
+
+    <!-- Progress -->
+    <div class="progress-block">
+      <div class="progress-track">
+        <div class="progress-fill"
+             style="width:{{ g.goal.progress_percent|floatformat:0 }}%"></div>
+      </div>
+      <div class="progress-meta">
+        <span>₹{{ g.goal.current_amount }}</span>
+        <span>{{ g.goal.progress_percent|floatformat:0 }}% of ₹{{ g.goal.target_amount }}</span>
+      </div>
+    </div>
+
+    <!-- 5yr projection -->
+    <div class="projection-line">
+      <span class="projection-label">5-Year Projection</span>
+      <span class="projection-value">₹{{ g.projection|floatformat:0 }}</span>
+    </div>
+
+    <!-- Monte Carlo -->
+    <div class="monte-box">
+      <p class="monte-title">Monte Carlo Simulation</p>
+      <div class="monte-grid">
+
+        <div class="monte-item highlight">
+          <span class="monte-item-label">Success Probability</span>
+          <span class="monte-item-value">{{ g.monte.success_rate }}%</span>
+        </div>
+
+        <div class="monte-item">
+          <span class="monte-item-label">Median Outcome</span>
+          <span class="monte-item-value">₹{{ g.monte.median_value }}</span>
+        </div>
+
+        <div class="monte-divider"></div>
+
+        <div class="monte-item">
+          <span class="monte-item-label">Worst Case</span>
+          <span class="monte-item-value" style="color:#dc2626;">₹{{ g.monte.worst_case }}</span>
+        </div>
+
+        <div class="monte-item">
+          <span class="monte-item-label">Best Case</span>
+          <span class="monte-item-value" style="color:#059669;">₹{{ g.monte.best_case }}</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer pills -->
+    <div class="goal-footer">
+      <span class="goal-pill">
+        Monthly: <strong>₹{{ g.goal.monthly_contribution }}</strong>
+      </span>
+      <span class="goal-pill">
+        Return: <strong>{{ g.goal.expected_annual_return }}%</strong>
+      </span>
+      <span class="goal-pill">
+        Target:
+        <strong>
+          {% if g.goal.target_date %}{{ g.goal.target_date }}{% else %}TBD{% endif %}
+        </strong>
+      </span>
+    </div>
+
   </div>
-
-  <div class="flex justify-between text-sm text-slate-600">
-    <span>₹ {{ goal.current_amount }}</span>
-    <span>{{ goal.progress_percent|floatformat:0 }}%</span>
-  </div>
-
-  <div class="mt-4 text-sm">
-    Required Monthly:
-    <strong>₹ {{ goal.monthly_required|floatformat:0 }}</strong>
-  </div>
-
-  <div class="mt-4 text-sm text-slate-600">
-  Predicted Completion:
-  <strong>
-    {% if goal.predicted_completion_date %}
-      {{ goal.predicted_completion_date }}
-    {% else %}
-      Not Calculated
-    {% endif %}
-  </strong>
-</div>
-
+  {% endfor %}
 
 </div>
-
-{% endfor %}
-
-</div>
-
-<!-- Forecast Chart -->
-<div class="goal-card">
-
-  <h3 class="font-semibold mb-6 text-lg">
-    📈 Savings Forecast
-  </h3>
-
-  <canvas id="forecastChart"></canvas>
-
-</div>
-
-<script>
-
-const forecastData = {{ forecast_json|safe }};
-
-const datasets = forecastData.map((goal, index) => ({
-    label: goal.name,
-    data: goal.data,
-    borderColor: `hsl(${index * 60}, 70%, 50%)`,
-    tension: 0.3
-}));
-
-new Chart(document.getElementById("forecastChart"), {
-    type: "line",
-    data: {
-        labels: Array.from({length: 24}, (_, i) => `Month ${i+1}`),
-        datasets: datasets
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: "bottom"
-            }
-        }
-    }
-});
-
-</script>
+{% endif %}
 
 {% endblock %}

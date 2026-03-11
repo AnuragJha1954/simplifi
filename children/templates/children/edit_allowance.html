@@ -1,0 +1,28 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<h2 class="text-2xl font-semibold mb-6">
+Edit Allowance
+</h2>
+
+<form method="POST" class="bg-white border rounded-2xl p-8 max-w-lg">
+
+{% csrf_token %}
+
+<p class="mb-4 font-medium">
+Category: {{ category.name }}
+</p>
+
+<input type="number"
+name="amount"
+value="{{ category.allocated_amount }}"
+class="w-full border rounded-xl px-4 py-3 mb-4">
+
+<button
+class="bg-cyan-500 text-white px-6 py-3 rounded-xl">
+Update Allowance
+</button>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<h2 class="text-2xl font-semibold mb-6">
+Profile Settings
+</h2>
+
+{% if success %}
+<div class="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded">
+{{ success }}
+</div>
+{% endif %}
+
+<div class="bg-white border rounded-xl p-6 max-w-md">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<p class="text-sm text-slate-500 mb-2">
+Username
+</p>
+
+<p class="font-medium mb-4">
+{{ request.user.username }}
+</p>
+
+
+<label class="text-sm text-slate-500">
+Age
+</label>
+
+<input
+type="number"
+name="age"
+value="{{ child.age }}"
+class="w-full border rounded-xl px-4 py-3 mb-4">
+
+<button
+class="bg-cyan-500 text-white px-5 py-3 rounded-xl">
+
+Save Changes
+
+</button>
+
+</form>
+
+</div>
+
+{% endblock %}

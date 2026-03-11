@@ -92,7 +92,9 @@ class SpendingForm(BaseStyledForm):
 
 
 
-class FinancialGoalForm(BaseStyledForm):
+
+class FinancialGoalForm(forms.ModelForm):
+
     class Meta:
         model = FinancialGoal
         fields = [
@@ -100,27 +102,7 @@ class FinancialGoalForm(BaseStyledForm):
             "name",
             "target_amount",
             "current_amount",
-            "timeline_months",
+            "target_date",
             "monthly_contribution",
+            "expected_annual_return",
         ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields["goal_type"].widget.attrs["class"] = \
-            "w-full h-14 px-5 rounded-xl border border-slate-300 bg-white"
-
-        self.fields["name"].widget.attrs["placeholder"] = \
-            "Goal Name (e.g., Europe Trip 2026)"
-
-        self.fields["target_amount"].widget.attrs["placeholder"] = \
-            "Target Amount (₹)"
-
-        self.fields["current_amount"].widget.attrs["placeholder"] = \
-            "Current Savings (₹)"
-
-        self.fields["timeline_months"].widget.attrs["placeholder"] = \
-            "Timeline in Months (e.g., 12)"
-
-        self.fields["monthly_contribution"].widget.attrs["placeholder"] = \
-            "Monthly Saving Allocation (₹)"

@@ -1,0 +1,69 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<h2 class="text-2xl font-semibold mb-6">
+Manage Allowance — {{ child.child_user.username }}
+</h2>
+
+<div class="grid md:grid-cols-2 gap-8">
+
+<div class="bg-white border rounded-2xl p-6">
+
+<h3 class="font-semibold mb-4">Add Allowance</h3>
+
+<form method="POST" class="space-y-4">
+{% csrf_token %}
+
+<input type="text" name="category"
+placeholder="Category (Trips / Lunch / Pocket Money)"
+class="w-full border rounded-xl px-4 py-3">
+
+<input type="number" name="amount"
+placeholder="Amount"
+class="w-full border rounded-xl px-4 py-3">
+
+<button
+class="bg-cyan-500 text-white px-5 py-3 rounded-xl">
+Add Allowance
+</button>
+
+</form>
+
+</div>
+
+
+<div class="bg-white border rounded-2xl p-6">
+
+<h3 class="font-semibold mb-4">Current Allowances</h3>
+
+<p class="text-sm text-slate-500 mb-4">
+Total Allocated: ₹{{ total_allocated|floatformat:2 }}   
+</p>
+
+<div class="space-y-4">
+
+{% for category in categories %}
+
+<div class="flex justify-between items-center border-b pb-2">
+
+<div>
+<p class="font-medium">{{ category.name }}</p>
+<p class="text-sm text-slate-500">₹{{ category.allocated_amount }}</p>
+</div>
+
+<a href="{% url 'edit_allowance' category.id %}"
+class="text-cyan-600 text-sm">
+Edit
+</a>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

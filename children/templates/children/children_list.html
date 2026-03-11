@@ -1,0 +1,153 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<div>
+
+  <div class="flex justify-between items-center mb-8">
+    <h2 class="text-2xl font-semibold">Your Children</h2>
+
+    <a href="{% url 'add_child' %}"
+       class="bg-cyan-500 text-white px-5 py-2 rounded-xl hover:bg-cyan-600">
+       + Add Child
+    </a>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6">
+
+    {% for child in children %}
+    <div class="bg-white border rounded-2xl p-6 hover:shadow-md transition">
+
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold text-lg">
+          {{ child.child_user.username }}
+        </h3>
+
+        <span class="text-sm text-slate-500">
+          Age {{ child.age }}
+        </span>
+      </div>
+
+      <div class="space-y-3">
+
+        <a href="{% url 'edit_child' child.id %}"
+           class="block text-cyan-600 hover:underline text-sm">
+           Edit Profile
+        </a>
+        <a href="{% url 'manage_allowance' child.id %}"
+class="block text-green-600 hover:underline text-sm">
+Manage Allowance
+</a>
+
+<a href="{% url 'reset_child_password' child.id %}"
+class="block text-indigo-600 hover:underline text-sm">
+
+Reset Password
+
+</a>
+
+        <a href="{% url 'deactivate_child' child.id %}"
+           class="block text-red-500 hover:underline text-sm">
+           Deactivate Account
+        </a>
+
+        <a href="{% url 'delete_child' child.id %}"
+class="block text-red-600 hover:underline text-sm"
+onclick="return confirm('Delete this child account?')">
+
+Delete Child
+
+</a>
+
+      </div>
+
+    </div>
+    {% empty %}
+      <p class="text-slate-500">No children added yet.</p>
+    {% endfor %}
+
+
+    
+
+  </div>
+
+  <h3 class="text-xl font-semibold mt-10 mb-4">
+Pending Requests
+</h3>
+
+<div class="bg-white border rounded-xl overflow-hidden">
+
+<table class="w-full">
+
+<thead class="bg-slate-50 text-sm text-slate-600">
+
+<tr>
+<th class="p-3 text-left">Child</th>
+<th class="p-3 text-left">Category</th>
+<th class="p-3 text-left">Amount</th>
+<th class="p-3 text-left">Reason</th>
+<th class="p-3 text-left">Action</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for r in requests %}
+
+<tr class="border-t">
+
+<td class="p-3">
+{{ r.child.child_user.username }}
+</td>
+
+<td class="p-3">
+{{ r.category.name }}
+</td>
+
+<td class="p-3">
+₹{{ r.amount }}
+</td>
+
+<td class="p-3">
+{{ r.reason }}
+</td>
+
+<td class="p-3 flex gap-3">
+
+<a href="{% url 'approve_request' r.id %}"
+class="text-green-600 font-medium">
+
+Approve
+
+</a>
+
+<a href="{% url 'reject_request' r.id %}"
+class="text-red-600 font-medium">
+
+Reject
+
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5" class="p-6 text-center text-slate-500">
+No pending requests
+</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

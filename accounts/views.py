@@ -1,22 +1,36 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from .forms import SignUpForm, LoginForm
+from django.views import View
 
-
+@csrf_exempt
 def login_view(request):
+
     if request.user.is_authenticated:
         return redirect('dashboard')
 
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
+
         if form.is_valid():
-            login(request, form.get_user())
-            return redirect('dashboard')
+
+            user = form.get_user()
+            login(request, user)
+
+            if user.role == "child":
+                return redirect("child_dashboard")
+
+            return redirect("dashboard")
+
     else:
         form = LoginForm()
 
-    return render(request, 'accounts/auth.html', {'form': form, 'type': 'login'})
+    return render(request, 'accounts/auth.html', {
+        'form': form,
+        'type': 'login'
+    })
 
 
 def signup_view(request):
@@ -57,5 +71,8 @@ def settings_page(request):
 
 
 
-
+class CustomLogoutView(View):
+    def get(self, request):
+        logout(request)
+        return redirect('home')
 

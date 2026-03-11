@@ -1,0 +1,40 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<h2 class="text-2xl font-semibold mb-6">
+My Allowances
+</h2>
+
+<div class="grid md:grid-cols-3 gap-6 mb-8">
+
+<div class="info-card">
+<p class="info-card-label">Total Allowance</p>
+<p class="text-2xl font-semibold">
+₹{{ wallet.total_allocated }}
+</p>
+</div>
+
+</div>
+
+
+<div class="grid md:grid-cols-3 gap-6">
+
+{% for category in categories %}
+
+<div class="bg-white border rounded-xl p-6">
+
+<p class="text-sm text-slate-500 mb-2">
+{{ category.name }}
+</p>
+
+<p class="text-xl font-semibold">
+₹{{ category.allocated_amount }}
+</p>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

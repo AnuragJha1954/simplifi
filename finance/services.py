@@ -1,6 +1,7 @@
 from .models import EMI, CreditCard, Subscription, MonthlySpending
 from django.db.models import Sum
 import math
+from decimal import Decimal
 
 def emi_prepayment_simulation(emi, extra_payment):
 
@@ -79,19 +80,19 @@ def get_income_value(user):
 
 def financial_summary(user):
 
-    monthly_income = get_income_value(user)
+    monthly_income = Decimal(get_income_value(user) or 0)
 
     emis = EMI.objects.filter(user=user)
     cards = CreditCard.objects.filter(user=user)
 
-    total_emi = emis.aggregate(total=Sum('monthly_payment'))['total'] or 0
+    total_emi = emis.aggregate(total=Sum('monthly_payment'))['total'] or Decimal("0")
     total_subscriptions = Subscription.objects.filter(user=user).aggregate(
         total=Sum('monthly_cost')
-    )['total'] or 0
+    )['total'] or Decimal("0")
 
     total_spending = MonthlySpending.objects.filter(user=user).aggregate(
         total=Sum('average_monthly_amount')
-    )['total'] or 0
+    )['total'] or Decimal("0")
 
     total_fixed = total_emi + total_subscriptions
     total_outflow = total_fixed + total_spending
@@ -99,23 +100,22 @@ def financial_summary(user):
 
     # -----------------------------
     # 1️⃣ EMI PREPAYMENT OPTIMIZER
-    # Avalanche Strategy (highest interest first)
     # -----------------------------
 
     emi_optimizer = None
+
     if emis.exists():
         highest_interest_emi = emis.order_by('-interest_rate').first()
+
         interest_saved = (
             highest_interest_emi.monthly_payment *
             highest_interest_emi.remaining_months *
-            (highest_interest_emi.interest_rate / 100)
-        ) / 12
-
-        months_saved = highest_interest_emi.remaining_months
+            (highest_interest_emi.interest_rate / Decimal("100"))
+        ) / Decimal("12")
 
         emi_optimizer = {
             "close_first": highest_interest_emi.name,
-            "months_saved": months_saved,
+            "months_saved": highest_interest_emi.remaining_months,
             "interest_saved": round(interest_saved, 2)
         }
 
@@ -124,22 +124,23 @@ def financial_summary(user):
     # -----------------------------
 
     credit_simulation = []
-    for card in cards:
-        utilization = card.utilization_percentage()
 
-        # Estimated CIBIL impact logic
-        if utilization > 75:
+    for card in cards:
+        utilization = Decimal(card.utilization_percentage())
+
+        if utilization > Decimal("75"):
             score_impact = -40
-        elif utilization > 50:
+        elif utilization > Decimal("50"):
             score_impact = -20
-        elif utilization > 30:
+        elif utilization > Decimal("30"):
             score_impact = -5
         else:
-            score_impact = +10
+            score_impact = 10
 
         optimal_payment = max(
-            (card.total_limit * 0.3) - (card.total_limit - card.available_limit),
-            0
+            (card.total_limit * Decimal("0.30")) -
+            (card.total_limit - card.available_limit),
+            Decimal("0")
         )
 
         credit_simulation.append({
@@ -153,19 +154,19 @@ def financial_summary(user):
     # 3️⃣ CASHFLOW RISK SCORE
     # -----------------------------
 
-    if monthly_income == 0:
+    if monthly_income == Decimal("0"):
         risk_level = "Unknown"
         liquidity_probability = 0
     else:
         debt_ratio = total_emi / monthly_income
 
-        if surplus < monthly_income * 0.1:
+        if surplus < monthly_income * Decimal("0.10"):
             risk_level = "High"
             liquidity_probability = 70
-        elif debt_ratio > 0.5:
+        elif debt_ratio > Decimal("0.50"):
             risk_level = "High"
             liquidity_probability = 65
-        elif debt_ratio > 0.35:
+        elif debt_ratio > Decimal("0.35"):
             risk_level = "Medium"
             liquidity_probability = 35
         else:
@@ -178,11 +179,12 @@ def financial_summary(user):
 
     alerts = []
 
-    if surplus < monthly_income * 0.1:
-        alerts.append("⚠ Surplus below 10% of income.")
+    if monthly_income != Decimal("0"):
+        if surplus < monthly_income * Decimal("0.10"):
+            alerts.append("⚠ Surplus below 10% of income.")
 
-    if total_emi > monthly_income * 0.5:
-        alerts.append("🚨 EMI exceeds 50% of income.")
+        if total_emi > monthly_income * Decimal("0.50"):
+            alerts.append("🚨 EMI exceeds 50% of income.")
 
     if risk_level == "High":
         alerts.append("High liquidity risk detected.")

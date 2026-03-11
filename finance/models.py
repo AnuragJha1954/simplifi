@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
+from decimal import Decimal
 
 class CreditCard(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -65,59 +66,41 @@ class FinancialGoal(models.Model):
         ("custom", "Custom"),
     ]
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    goal_type = models.CharField(
-        max_length=20,
-        choices=GOAL_TYPES,
-        default="custom"
-    )
+    goal_type = models.CharField(max_length=20, choices=GOAL_TYPES, default="custom")
 
     name = models.CharField(max_length=100)
 
-    target_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    target_amount = models.DecimalField(max_digits=14, decimal_places=2)
 
-    current_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        default=0
-    )
+    current_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
 
-    timeline_months = models.PositiveIntegerField(
-        help_text="How many months to complete this goal"
-    )
+    # User can choose either:
+    # 1) Fixed timeline OR
+    # 2) Fixed monthly investment
+    target_date = models.DateField(null=True, blank=True)
 
     monthly_contribution = models.DecimalField(
-        max_digits=10,
+        max_digits=12,
         decimal_places=2,
-        default=0
+        null=True,
+        blank=True
+    )
+
+    expected_annual_return = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Expected annual return %"
     )
 
     created_at = models.DateTimeField(default=timezone.now)
 
-    # Intelligent calculations
-
-    def required_monthly(self):
-        remaining = self.target_amount - self.current_amount
-        if self.timeline_months > 0:
-            return remaining / self.timeline_months
-        return 0
-
-    def predicted_completion_date(self):
-        if self.monthly_contribution <= 0:
-            return None
-
-        remaining = self.target_amount - self.current_amount
-        months = remaining / self.monthly_contribution
-        return timezone.now().date() + timedelta(days=int(months * 30))
-
-    def progress_percent(self):
-        if self.target_amount == 0:
-            return 0
-        return (self.current_amount / self.target_amount) * 100
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.user})"
+
+

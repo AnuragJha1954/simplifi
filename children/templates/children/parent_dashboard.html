@@ -1,0 +1,164 @@
+{% extends "accounts/dashboard.html" %}
+{% block content %}
+
+<h2 class="text-2xl font-semibold mb-8">
+Children Overview 👨‍👩‍👧
+</h2>
+
+
+<!-- SUMMARY CARDS -->
+
+<div class="grid md:grid-cols-3 gap-6 mb-10">
+
+<div class="info-card">
+<p class="info-card-label">TOTAL CHILDREN</p>
+<p class="text-3xl font-semibold">
+{{ total_children }}
+</p>
+</div>
+
+
+<div class="info-card">
+<p class="info-card-label">TOTAL ALLOWANCE</p>
+<p class="text-3xl font-semibold text-cyan-600">
+₹{{ total_allowance|floatformat:2 }}
+</p>
+</div>
+
+
+<div class="info-card">
+<p class="info-card-label">PENDING REQUESTS</p>
+<p class="text-3xl font-semibold">
+{{ total_pending_requests }}
+</p>
+</div>
+
+</div>
+
+
+
+<!-- CHILD CARDS -->
+
+<div class="grid md:grid-cols-2 gap-8">
+
+{% for data in children_data %}
+
+<div class="bg-white border rounded-xl p-6 hover:shadow-md transition">
+
+<!-- CHILD HEADER -->
+
+<div class="flex justify-between items-center mb-4">
+
+<h3 class="text-lg font-semibold">
+👶 {{ data.child.child_user.username }}
+</h3>
+
+<span class="text-sm text-slate-500">
+Age {{ data.child.age }}
+</span>
+
+</div>
+
+
+<!-- TOTAL ALLOWANCE -->
+
+<p class="text-sm text-slate-500">
+Total Allowance
+</p>
+
+<p class="text-2xl font-semibold text-cyan-600 mb-4">
+₹{{ data.total|floatformat:2 }}
+</p>
+
+
+
+<!-- SPENDING ANALYTICS -->
+
+<h4 class="text-sm text-slate-500 mb-3">
+Spending Breakdown
+</h4>
+
+<div class="space-y-3 mb-4">
+
+{% for cat in data.categories %}
+
+<div>
+
+<div class="flex justify-between text-sm mb-1">
+
+<span class="text-slate-600">
+{{ cat.name }}
+</span>
+
+<span class="font-medium">
+₹{{ cat.amount }}
+</span>
+
+</div>
+
+<div class="w-full bg-slate-100 rounded-full h-2">
+
+<div
+class="bg-cyan-500 h-2 rounded-full"
+style="width: {{ cat.percent }}%">
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+
+<!-- REQUEST STATUS -->
+
+{% if data.pending_requests > 0 %}
+
+<div class="text-yellow-600 text-sm font-medium mb-4">
+⏳ {{ data.pending_requests }} request pending
+</div>
+
+{% else %}
+
+<div class="text-green-600 text-sm font-medium mb-4">
+✔ No pending requests
+</div>
+
+{% endif %}
+
+
+
+<!-- ACTION BUTTONS -->
+
+<div class="flex gap-3">
+
+<a
+href="{% url 'manage_allowance' data.child.id %}"
+class="bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm">
+
+Manage Allowance
+
+</a>
+
+
+<a
+href="{% url 'children_list' %}"
+class="border border-slate-300 px-4 py-2 rounded-lg text-sm">
+
+Manage Children
+
+</a>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+{% endblock %}
